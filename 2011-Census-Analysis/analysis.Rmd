@@ -1,0 +1,53 @@
+---
+title: "2011 and 2016 Census of Housing and Population Analysis"
+date: "21 April 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+## Overview
+
+```{r import}
+
+  importSA2Data <- function(filePath, state) {
+    data <- read.csv(file=filePath, skip = 9, header = TRUE)
+    data$X <- NULL
+    names(data) <- c("SA2", "Non-Indigenous", "Aboriginal", "Torres Strait Islander", 
+                     "Both Aboriginal and Torres Strait Islander", "Not stated", "Total")
+    data$`Non-Indigenous` <- as.integer(data$`Non-Indigenous`)
+    data$State <- state
+    nrows <- nrow(data)
+    data <- data[-c(1, nrows-3, nrows-2, nrows-1, nrows), ]
+    return(data)
+  }
+
+# Indigenous Status by SA2 Level for each state (2011 Census)
+  act <- importSA2Data("data/Census 2011 - Indigenous Status by SA2 Level - ACT.csv", "ACT")
+  nsw <- importSA2Data("data/Census 2011 - Indigenous Status by SA2 Level - NSW.csv", "NSW")
+  nt <- importSA2Data("data/Census 2011 - Indigenous Status by SA2 Level - NT.csv", "NT")
+  other <- importSA2Data("data/Census 2011 - Indigenous Status by SA2 Level - Other.csv", "OTHER")
+  qld <- importSA2Data("data/Census 2011 - Indigenous Status by SA2 Level - QLD.csv", "QLD")
+  sa <- importSA2Data("data/Census 2011 - Indigenous Status by SA2 Level - SA.csv", "SA")
+  tas <- importSA2Data("data/Census 2011 - Indigenous Status by SA2 Level - TAS.csv", "TAS")
+  vic <- importSA2Data("data/Census 2011 - Indigenous Status by SA2 Level - VIC.csv", "VIC")
+  wa <- importSA2Data("data/Census 2011 - Indigenous Status by SA2 Level - WA.csv", "WA")
+  
+  sa2Data <- rbind(act, nsw, nt, other, qld, sa, tas, vic, wa)
+  sa2Data$State <- as.factor(sa2Data$State)
+  rm(act, nsw, nt, other, qld, sa, tas, vic, wa)
+  
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

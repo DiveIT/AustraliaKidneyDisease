@@ -1,0 +1,24 @@
+Australian Bureau of Statistics
+
+"2011 Census - Cultural and Language Diversity"
+"SA2 by Indigenous Status (INGP)"
+"Counting: Persons, Place of Usual Residence"
+
+Filters:
+"Default Summation","Persons, Place of Usual Residence"
+
+"Indigenous Status (INGP)","Non-Indigenous","Aboriginal","Torres Strait Islander","Both Aboriginal and Torres Strait Islander","Not stated","Total",
+"SA2",
+"Christmas Island",1973,10,0,0,89,2072,
+"Cocos (Keeling) Islands",521,3,5,0,26,549,
+"Jervis Bay",133,220,0,4,23,377,
+"Migratory - Offshore - Shipping (OT)",0,0,0,0,0,0,
+"No Usual Address (OT)",26,0,0,0,0,26,
+"Total",2650,236,8,4,137,3029,
+
+"Data Source: 2011 Census of Population and Housing"
+
+"INFO","Cells in this table have been randomly adjusted to avoid the release of confidential data. No reliance should be placed on small cells."
+
+
+"Commonwealth of Australia, 2018. This ABS data is covered by Creative Commons Attribution 2.5 Australia licence."
