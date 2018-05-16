@@ -1,0 +1,24 @@
+Australian Bureau of Statistics
+
+"2016 Census - Employment, Income and Education"
+"SA2 (UR) by INGP Indigenous Status"
+"Counting: Persons Place of Usual Residence"
+
+Filters:
+"Default Summation","Persons Place of Usual Residence"
+
+"INGP Indigenous Status","Non-Indigenous","Aboriginal","Torres Strait Islander","Both Aboriginal and Torres Strait Islander","Not stated","Total",
+"SA2 (UR)",
+"Christmas Island",1580,5,7,0,254,1842,
+"Cocos (Keeling) Islands",494,3,5,0,42,541,
+"Jervis Bay",138,200,0,3,50,395,
+"Norfolk Island",1624,6,0,0,110,1748,
+"Migratory - Offshore - Shipping (OT)",4,0,0,0,0,4,
+"No Usual Address (OT)",48,0,0,0,0,54,
+"Total",3893,213,10,5,462,4583,
+
+
+"INFO","Cells in this table have been randomly adjusted to avoid the release of confidential data. No reliance should be placed on small cells."
+
+
+"Commonwealth of Australia, 2018. This ABS data is covered by Creative Commons Attribution 2.5 Australia licence."
