@@ -18,14 +18,6 @@ source("functions.R")
 #   Columns: Indigenous Status, Sex, Age in 10 year blocks
 #   TODO: Total Family Income, Education/Qualification?, Employment?
 
-# Indigenous Status by SA2 Level (2011 Census)
-  #sa2Data <- read.csv(file="data/Census 2011 - Indigenous Status by SA2 Level.csv", skip = 9, header = TRUE)
-  #sa2Data$X <- NULLW
-  #names(sa2Data) <- c("SA2", "Non-Indigenous", "Aboriginal", "Torres Strait Islander", 
-  #                 "Both Aboriginal and Torres Strait Islander", "Not stated", "Total")
-  #sa2Data$`Non-Indigenous` <- as.integer(sa2Data$`Non-Indigenous`)
-  #sa2Data <- sa2Data[-c(1, 2216, 2217, 2218, 2219), ]
-
 # Import: Indigenous Status by SA2 Level for each state (2011 Census)
 
   act <- importSA2Data("data/Census 2011 - Indigenous Status by SA2 Level - ACT.csv", "ACT")
@@ -42,18 +34,13 @@ source("functions.R")
   sa2Data$State <- as.factor(sa2Data$State)
   rm(act, nsw, nt, other, qld, sa, tas, vic, wa)
 
-  
 # Import: SA2 Level by Indigenous Status, Sex, Age in 10 year blocks, and Weekly Personal Income (2011 Census)  
   
   filePath = "data/2011_Census.csv"
-  statusList <- c("Non-Indigenous", "Aboriginal", "Torres Strait Islander", 
-                  "Both Aboriginal and Torres Strait Islander", "Not stated")
   
   if (file.exists(filePath)) {
     
     census <- read.csv(file=filePath, header=TRUE)
-    # TODO: Add new column that codes everyone as Non-Indigenous; Indigenous; or Not Stated
-    census$Status <- 
     rm(filePath)
     
   } else 
@@ -72,6 +59,8 @@ source("functions.R")
     # Get rid of columns for "Total" status as this can be calculated from other data (last 308 columns)
     ncols <- ncol(data)
     data <- data[, -c((ncols-307):ncols)]
+    
+    length(which(data == 0)) # number of zero counts in data
     
     # Rename Columns headings
     # New Columns:  SA2  
@@ -95,7 +84,8 @@ source("functions.R")
     start_time <- Sys.time()
     while (row <= nrows) 
     {
-      for (status in statusList)
+      for (status in c("Non-Indigenous", "Aboriginal", "Torres Strait Islander", 
+                       "Both Aboriginal and Torres Strait Islander", "Not stated"))
       {
         for (gender in c("Male", "Female")) 
         {
@@ -109,6 +99,7 @@ source("functions.R")
               count <- data[row, col]
               if (count == 0) 
               {
+                # Skipping counts of 0 speeds up the processing considerably
                 col <- col+1
                 next
               }
@@ -131,13 +122,60 @@ source("functions.R")
     
     census$Count <- as.integer(as.character(census$Count))
     rm(nrows, ncols, age, gender, status, weekly_income, column_names, row, col, new_row, count, start_time, end_time)
+    rm(data)
+    
+    # Add new column that codes everyone as Non-Indigenous or Indigenous
+    census$Indigenous <- 1
+    census$Indigenous[census$Indigenous.Status=='Non-Indigenous'] <- 0
+    census$Indigenous[census$Indigenous.Status=='Not stated'] <- 0
+    
+    # Import: SA2 Level by Remoteness Areas. This is used to determine whether a SA2 area is considered rural or not.
+    remoteness <- read.csv(file="data/Census 2011 - SA2 by Remoteness Area.csv", skip=9, header=TRUE)
+    remoteness$Total <- remoteness$X <- NULL # Remove unrequired variables
+    nrows <- nrow(remoteness)
+    remoteness <- remoteness[-c(1, nrows-3, nrows-2, nrows-1, nrows), ] # Remove unrequired rows
+    colnames(remoteness)[1] <- "SA2"
+    remoteness$Major.Cities.of.Australia..NSW. <- as.integer(as.character(remoteness$Major.Cities.of.Australia..NSW.))
+    remoteness$SA2 <- as.character(remoteness$SA2)
+    
+    remoteness <- merge(sa2Data[c("SA2", "State")], remoteness, by="SA2") # Add state SA2 region belongs to
+    
+    # Create dummy categories
+    remoteness$nonzeros <- simplify2array(
+      apply(
+        remoteness[-1:-2], 1, 
+        function(x) paste(names(remoteness[-1:-2])[x != 0], collapse = " ")
+      )
+    )
+    
+    remoteness$City <- 0
+    remoteness$InnerRegional <- 0
+    remoteness$OuterRegional <- 0
+    remoteness$Remote <- 0
+    remoteness$VeryRemote <- 0
+    remoteness$MigratoryOffshoreShipping <- 0
+    remoteness$NoUsualAddress <- 0
+    remoteness$City[grepl("Cities", remoteness$nonzeros)] <- 1
+    remoteness$InnerRegional[grepl("Inner.Regional", remoteness$nonzeros)] <- 1
+    remoteness$OuterRegional[grepl("Outer.Regional", remoteness$nonzeros)] <- 1
+    remoteness$Remote[grepl("Remote.Australia", remoteness$nonzeros)] <- 1
+    remoteness$VeryRemote[grepl("Very.Remote", remoteness$nonzeros)] <- 1
+    remoteness$MigratoryOffshoreShipping[grepl("Migratory", remoteness$nonzeros)] <- 1
+    remoteness$NoUsualAddress[grepl("No.usual.address", remoteness$nonzeros)] <- 1
+    
+    remoteness$nonzeros <- NULL
+    remoteness <- remoteness[c(1:2, 56:62)]
+    
+    # Merge Remoteness dummy variables
+    census <- merge(remoteness, census, by=c("SA2", "State")) 
+    rm(remoteness)
     
     # 172 obs took 1.820187 hours to produce 264,880 x 7 data frame. Only takes ~2.5 minutes if skip 0 values
     # 6.666625 hours to run
     write.table(census, "D:/2011_Census.csv", sep=",", col.names = TRUE, row.names = FALSE)
     
   }
-  
+
 # Summary Statistics - SA2Data
   
   sum(!complete.cases(sa2Data)) # number of rows of data that have missing values 
@@ -176,6 +214,12 @@ source("functions.R")
     print(paste(status, "-", sum(census[which(census$Indigenous.Status == status),]$Count)))
   }
   
+  # Number of people who are indigenous or not
+  for (indigenous in unique(census$Indigenous))
+  {
+    print(paste(indigenous, "-", sum(census[which(census$Indigenous == indigenous),]$Count)))
+  }
+  
   # Number of people per state by indigenous status
   for (status in unique(census$Indigenous.Status))
   {
@@ -205,13 +249,20 @@ source("functions.R")
   }
 
   
-  rm(state, status, age, income, sex)
+  rm(state, status, age, income, sex, indigenous)
   
 # TODO: Plots
   
   plot(sa2Data$State, main="Number of SA2 Levels per State", ylab="SA2 Levels")
 
+  boxplot(Count ~ Age, data = census)
+  boxplot(Count ~ Weekly.Personal.Income, data = census)
+  boxplot(Count ~ Indigenous, data = census)
+
+# TODO: Dummy Variables
+  
 # TODO: Correlation
 # https://stats.stackexchange.com/questions/108007/correlations-with-unordered-categorical-variables
+# https://stats.stackexchange.com/questions/119835/correlation-between-a-nominal-iv-and-a-continuous-dv-variable/124618#124618
   
-  
+
