@@ -1,0 +1,71 @@
+---
+title: "2011 and 2016 Census of Housing and Population Exploratory Analysis"
+date: "21 April 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+library(psych)
+library(plyr)
+library(data.table)
+
+setwd("D:/Education/2015-2018 - Master of Data Science/2018-S1 - Data Science Professional Development 2/AustraliaKidneyDisease")
+
+source("functions.R")
+
+```
+
+## Overview
+
+```{r import}
+
+# Import: Indigenous Status by SA2 Level for each state (2011 Census)
+sa2Data2011 <- importSA2Data("2011")
+
+# Import: SA2 Level by Indigenous Status, Sex, Age in 10 year blocks, and Weekly Personal Income (2011 Census)
+census2011 <- importCensusData("2011", "2011-Census-Analysis/data/2011_Census.csv", "D:/2011_Census.csv")
+
+# Import: Indigenous Status by SA2 Level for each state (2016 Census)
+# Import: SA2 Level by Indigenous Status, Sex, Age in 10 year blocks, and Weekly Personal Income (2016 Census)  
+
+```
+
+### SA2 Level (2011 Census)
+
+```{r sa2_2011}
+
+dim(sa2Data2011) # data frame dimensions
+str(sa2Data2011) # structure of data
+summary(sa2Data2011)
+describe(sa2Data2011[c(2:7)], IQR=TRUE) # Summary statistics of population counts in each SA2 area
+  
+count(sa2Data2011, 'State') # Number of SA2 areas in each state
+sum(count(sa2Data2011, 'State')$freq) # Number of SA2 areas in Australia for 2011 Census
+
+```
+
+### 2011 Census Data
+
+```{r census_2011}
+
+dim(census2011) # data frame dimensions
+str(census2011) # structure of data
+head(census2011, n=5) 
+summary(census2011)   # When transforming the data counts of zero were excluded
+  
+describe(census2011$Count, IQR=TRUE) 
+  
+sum(census2011$Count) # Number of people counted in 2011 Census
+length(unique(census2011$SA2)) # Number of SA2 areas with population counts > 0
+length(unique(sa2Data2011$SA2)) - length(unique(census2011$SA2)) # Number of SA2 areas with no population recorded
+
+```
+
+
+### SA2 Level (2016 Census)
+
+### 2016 Census Data
+
+
+
