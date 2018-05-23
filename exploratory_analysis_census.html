@@ -131,9 +131,18 @@ sa2Data2011 &lt;- importSA2Data(&quot;2011&quot;)
 
 # Import: SA2 Level by Indigenous Status, Sex, Age in 10 year blocks, and Weekly Personal Income (2011 Census)
 census2011 &lt;- importCensusData(&quot;2011&quot;, &quot;2011-Census-Analysis/data/2011_Census.csv&quot;, &quot;D:/2011_Census.csv&quot;)
+census2011$Year &lt;- &quot;2011&quot;
 
 # Import: Indigenous Status by SA2 Level for each state (2016 Census)
-# Import: SA2 Level by Indigenous Status, Sex, Age in 10 year blocks, and Weekly Personal Income (2016 Census)  </code></pre>
+sa2Data2016 &lt;- importSA2Data(&quot;2016&quot;)
+
+# Import: SA2 Level by Indigenous Status, Sex, Age in 10 year blocks, and Weekly Personal Income (2016 Census)  
+census2016 &lt;- importCensusData(&quot;2016&quot;, &quot;2016-Census-Analysis/data/2016_Census.csv&quot;, &quot;D:/2016_Census.csv&quot;)
+census2016$Year &lt;- &quot;2016&quot;
+
+# Merge 2011 and 2016 data into one census dataset
+census &lt;- rbind(census2011, census2016)
+census$Year &lt;- as.factor(census$Year)</code></pre>
 <div id="sa2-level-2011-census" class="section level3">
 <h3>SA2 Level (2011 Census)</h3>
 <pre class="r"><code>dim(sa2Data2011) # data frame dimensions</code></pre>
@@ -148,6 +157,21 @@ census2011 &lt;- importCensusData(&quot;2011&quot;, &quot;2011-Census-Analysis/d
 ##  $ Not stated                                : int  153 501 828 175 98 167 114 189 271 40 ...
 ##  $ Total                                     : int  2483 4436 6390 3069 2903 7111 5412 5040 3556 2121 ...
 ##  $ State                                     : Factor w/ 9 levels &quot;ACT&quot;,&quot;NSW&quot;,&quot;NT&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...</code></pre>
+<pre class="r"><code>head(sa2Data2011)</code></pre>
+<pre><code>##         SA2 Non-Indigenous Aboriginal Torres Strait Islander
+## 2    Aranda             18         12                      0
+## 3 Belconnen             69         55                      0
+## 4     Bruce             94         50                      3
+## 5 Charnwood             41         91                      0
+## 6      Cook             38         19                      3
+## 7    Dunlop             99        135                      6
+##   Both Aboriginal and Torres Strait Islander Not stated Total State
+## 2                                          0        153  2483   ACT
+## 3                                          0        501  4436   ACT
+## 4                                          0        828  6390   ACT
+## 5                                          4        175  3069   ACT
+## 6                                          0         98  2903   ACT
+## 7                                          6        167  7111   ACT</code></pre>
 <pre class="r"><code>summary(sa2Data2011)</code></pre>
 <pre><code>##                SA2       Non-Indigenous    Aboriginal    
 ##  ACT - East      :   1   Min.   :  2.0   Min.   :   0.0  
@@ -219,9 +243,9 @@ census2011 &lt;- importCensusData(&quot;2011&quot;, &quot;2011-Census-Analysis/d
 <div id="census-data" class="section level3">
 <h3>2011 Census Data</h3>
 <pre class="r"><code>dim(census2011) # data frame dimensions</code></pre>
-<pre><code>## [1] 505022     15</code></pre>
+<pre><code>## [1] 505022     16</code></pre>
 <pre class="r"><code>str(census2011) # structure of data</code></pre>
-<pre><code>## 'data.frame':    505022 obs. of  15 variables:
+<pre><code>## 'data.frame':    505022 obs. of  16 variables:
 ##  $ SA2                      : Factor w/ 2148 levels &quot;Abbotsford&quot;,&quot;Aberfoyle Park&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...
 ##  $ State                    : Factor w/ 9 levels &quot;ACT&quot;,&quot;NSW&quot;,&quot;NT&quot;,..: 8 8 8 8 8 8 8 8 8 8 ...
 ##  $ City                     : int  1 1 1 1 1 1 1 1 1 1 ...
@@ -236,7 +260,8 @@ census2011 &lt;- importCensusData(&quot;2011&quot;, &quot;2011-Census-Analysis/d
 ##  $ Age                      : Factor w/ 11 levels &quot;0-9 years&quot;,&quot;10-19 years&quot;,..: 1 2 2 2 2 2 2 2 4 4 ...
 ##  $ Weekly.Personal.Income   : Factor w/ 14 levels &quot;$1-$199&quot;,&quot;$1,000-$1,249&quot;,..: 13 12 1 6 7 10 14 13 12 1 ...
 ##  $ Count                    : int  167 26 26 8 4 3 7 39 28 28 ...
-##  $ Indigenous               : int  0 0 0 0 0 0 0 0 0 0 ...</code></pre>
+##  $ Indigenous               : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ Year                     : chr  &quot;2011&quot; &quot;2011&quot; &quot;2011&quot; &quot;2011&quot; ...</code></pre>
 <pre class="r"><code>head(census2011, n=5) </code></pre>
 <pre><code>##          SA2 State City InnerRegional OuterRegional Remote VeryRemote
 ## 1 Abbotsford   VIC    1             0             0      0          0
@@ -250,12 +275,37 @@ census2011 &lt;- importCensusData(&quot;2011&quot;, &quot;2011-Census-Analysis/d
 ## 3                         0              0    Non-Indigenous Male
 ## 4                         0              0    Non-Indigenous Male
 ## 5                         0              0    Non-Indigenous Male
-##           Age Weekly.Personal.Income Count Indigenous
-## 1   0-9 years         Not applicable   167          0
-## 2 10-19 years             Nil income    26          0
-## 3 10-19 years                $1-$199    26          0
-## 4 10-19 years              $200-$299     8          0
-## 5 10-19 years              $300-$399     4          0</code></pre>
+##           Age Weekly.Personal.Income Count Indigenous Year
+## 1   0-9 years         Not applicable   167          0 2011
+## 2 10-19 years             Nil income    26          0 2011
+## 3 10-19 years                $1-$199    26          0 2011
+## 4 10-19 years              $200-$299     8          0 2011
+## 5 10-19 years              $300-$399     4          0 2011</code></pre>
+<pre class="r"><code>unique(census2011$State) # Levels of State variables</code></pre>
+<pre><code>## [1] VIC   SA    ACT   TAS   NSW   QLD   NT    WA    OTHER
+## Levels: ACT NSW NT OTHER QLD SA TAS VIC WA</code></pre>
+<pre class="r"><code>unique(census2011$Indigenous.Status) # Levels of Indigenous Status variable</code></pre>
+<pre><code>## [1] Non-Indigenous                            
+## [2] Aboriginal                                
+## [3] Not stated                                
+## [4] Torres Strait Islander                    
+## [5] Both Aboriginal and Torres Strait Islander
+## 5 Levels: Aboriginal ... Torres Strait Islander</code></pre>
+<pre class="r"><code>unique(census2011$Sex) # Levels of Sex variable</code></pre>
+<pre><code>## [1] Male   Female
+## Levels: Female Male</code></pre>
+<pre class="r"><code>unique(census2011$Age) # Levels of Age variable</code></pre>
+<pre><code>##  [1] 0-9 years          10-19 years        20-29 years       
+##  [4] 30-39 years        40-49 years        50-59 years       
+##  [7] 60-69 years        70-79 years        80-89 years       
+## [10] 90-99 years        100 years and over
+## 11 Levels: 0-9 years 10-19 years 100 years and over ... 90-99 years</code></pre>
+<pre class="r"><code>unique(census2011$Weekly.Personal.Income) # Levels of Weekly Personal Income variable</code></pre>
+<pre><code>##  [1] Not applicable  Nil income      $1-$199         $200-$299      
+##  [5] $300-$399       $800-$999       Not stated      $400-$599      
+##  [9] $600-$799       $1,000-$1,249   $1,250-$1,499   $1,500-$1,999  
+## [13] $2,000 or more  Negative income
+## 14 Levels: $1-$199 $1,000-$1,249 $1,250-$1,499 ... Not stated</code></pre>
 <pre class="r"><code>summary(census2011)   # When transforming the data counts of zero were excluded</code></pre>
 <pre><code>##                   SA2             State             City       
 ##  Mount Isa          :   404   NSW    :138183   Min.   :0.0000  
@@ -297,13 +347,13 @@ census2011 &lt;- importCensusData(&quot;2011&quot;, &quot;2011-Census-Analysis/d
 ##  60-69 years: 61342   $600-$799 : 40407      3rd Qu.:  47.0  
 ##  10-19 years: 60606   $1-$199   : 38831      Max.   :3718.0  
 ##  (Other)    :113687   (Other)   :218126                      
-##    Indigenous    
-##  Min.   :0.0000  
-##  1st Qu.:0.0000  
-##  Median :0.0000  
-##  Mean   :0.1155  
-##  3rd Qu.:0.0000  
-##  Max.   :1.0000  
+##    Indigenous         Year          
+##  Min.   :0.0000   Length:505022     
+##  1st Qu.:0.0000   Class :character  
+##  Median :0.0000   Mode  :character  
+##  Mean   :0.1155                     
+##  3rd Qu.:0.0000                     
+##  Max.   :1.0000                     
 ## </code></pre>
 <pre class="r"><code>describe(census2011$Count, IQR=TRUE) </code></pre>
 <pre><code>##    vars      n mean    sd median trimmed   mad min  max range skew
@@ -316,12 +366,829 @@ census2011 &lt;- importCensusData(&quot;2011&quot;, &quot;2011-Census-Analysis/d
 <pre><code>## [1] 2148</code></pre>
 <pre class="r"><code>length(unique(sa2Data2011$SA2)) - length(unique(census2011$SA2)) # Number of SA2 areas with no population recorded</code></pre>
 <pre><code>## [1] 66</code></pre>
+<pre class="r"><code># Number of people counted in each state during 2011 Census
+  total &lt;- sum(census2011$Count)
+  for (state in unique(census2011$State))
+  {
+    count &lt;- sum(census2011[which(census2011$State == state),]$Count)
+    percentage &lt;- (count / total) * 100
+    print(paste(state, &quot;-&quot;, count, &quot; : &quot;, percentage))
+  }</code></pre>
+<pre><code>## [1] &quot;VIC - 5318494  :  24.9525895571899&quot;
+## [1] &quot;SA - 1582573  :  7.42490158178062&quot;
+## [1] &quot;ACT - 351109  :  1.64728563515074&quot;
+## [1] &quot;TAS - 486207  :  2.28112012739558&quot;
+## [1] &quot;NSW - 6867016  :  32.2177352706717&quot;
+## [1] &quot;QLD - 4281844  :  20.0889755408047&quot;
+## [1] &quot;NT - 206393  :  0.96832671362929&quot;
+## [1] &quot;WA - 2218007  :  10.4061447293114&quot;
+## [1] &quot;OTHER - 2754  :  0.0129208440661024&quot;</code></pre>
+<pre class="r"><code>  # Number of people by indigenous status
+  for (status in unique(census2011$Indigenous.Status))
+  {
+    count &lt;- sum(census2011[which(census2011$Indigenous.Status == status),]$Count)
+    percentage &lt;- (count / total) * 100
+    print(paste(status, &quot;-&quot;, count, &quot; : &quot;, percentage))
+  }</code></pre>
+<pre><code>## [1] &quot;Non-Indigenous - 19863267  :  93.1917848766728&quot;
+## [1] &quot;Aboriginal - 431881  :  2.0262407611156&quot;
+## [1] &quot;Not stated - 989445  :  4.64214399309537&quot;
+## [1] &quot;Torres Strait Islander - 17690  :  0.0829955452176292&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 12114  :  0.0568348238986071&quot;</code></pre>
+<pre class="r"><code>  # Number of people who are indigenous or not
+  for (indigenous in unique(census2011$Indigenous))
+  {
+    count &lt;- sum(census2011[which(census2011$Indigenous == indigenous),]$Count)
+    percentage &lt;- (count / total) * 100
+    print(paste(indigenous, &quot;-&quot;, count, &quot; : &quot;, percentage))
+  }</code></pre>
+<pre><code>## [1] &quot;0 - 20852712  :  97.8339288697682&quot;
+## [1] &quot;1 - 461685  :  2.16607113023183&quot;</code></pre>
+<pre class="r"><code>  # Number of people per state by indigenous status
+  for (status in unique(census2011$Indigenous.Status))
+  {
+    for (state in unique(census2011$State))
+    {
+      stateTotal &lt;- sum(census2011[which(census2011$State == state),]$Count)
+      count &lt;- sum(census2011[which(census2011$Indigenous.Status == status &amp; census2011$State == state),]$Count)
+      percentage &lt;- (count / stateTotal) * 100
+      print(paste(status, &quot;-&quot;, state, &quot;-&quot;, count, &quot; : &quot;, percentage))
+    }
+  }</code></pre>
+<pre><code>## [1] &quot;Non-Indigenous - VIC - 5062204  :  95.1811546652116&quot;
+## [1] &quot;Non-Indigenous - SA - 1500274  :  94.7996711684074&quot;
+## [1] &quot;Non-Indigenous - ACT - 335842  :  95.6517776530935&quot;
+## [1] &quot;Non-Indigenous - TAS - 454189  :  93.4147389897718&quot;
+## [1] &quot;Non-Indigenous - NSW - 6394234  :  93.1151754998095&quot;
+## [1] &quot;Non-Indigenous - QLD - 3943409  :  92.0960455355216&quot;
+## [1] &quot;Non-Indigenous - NT - 136494  :  66.133056838168&quot;
+## [1] &quot;Non-Indigenous - WA - 2034155  :  91.710936890641&quot;
+## [1] &quot;Non-Indigenous - OTHER - 2466  :  89.5424836601307&quot;
+## [1] &quot;Aboriginal - VIC - 24959  :  0.469286982367565&quot;
+## [1] &quot;Aboriginal - SA - 24212  :  1.52991362799694&quot;
+## [1] &quot;Aboriginal - ACT - 2961  :  0.843327855452295&quot;
+## [1] &quot;Aboriginal - TAS - 14560  :  2.9946092919271&quot;
+## [1] &quot;Aboriginal - NSW - 146741  :  2.13689614237101&quot;
+## [1] &quot;Aboriginal - QLD - 106073  :  2.47727381006875&quot;
+## [1] &quot;Aboriginal - NT - 52460  :  25.4175286952561&quot;
+## [1] &quot;Aboriginal - WA - 59729  :  2.69291305212292&quot;
+## [1] &quot;Aboriginal - OTHER - 186  :  6.75381263616558&quot;
+## [1] &quot;Not stated - VIC - 230679  :  4.33729924298119&quot;
+## [1] &quot;Not stated - SA - 57759  :  3.64968946140241&quot;
+## [1] &quot;Not stated - ACT - 12215  :  3.47897661409989&quot;
+## [1] &quot;Not stated - TAS - 16826  :  3.46066593035477&quot;
+## [1] &quot;Not stated - NSW - 323461  :  4.71035745365964&quot;
+## [1] &quot;Not stated - QLD - 208965  :  4.88025719759991&quot;
+## [1] &quot;Not stated - NT - 16329  :  7.91160552925729&quot;
+## [1] &quot;Not stated - WA - 123109  :  5.55043333947999&quot;
+## [1] &quot;Not stated - OTHER - 102  :  3.7037037037037&quot;
+## [1] &quot;Torres Strait Islander - VIC - 458  :  0.00861146031188528&quot;
+## [1] &quot;Torres Strait Islander - SA - 170  :  0.0107420005269899&quot;
+## [1] &quot;Torres Strait Islander - ACT - 43  :  0.0122469090795166&quot;
+## [1] &quot;Torres Strait Islander - TAS - 355  :  0.0730141688622336&quot;
+## [1] &quot;Torres Strait Islander - NSW - 1415  :  0.0206057478240913&quot;
+## [1] &quot;Torres Strait Islander - QLD - 14648  :  0.342095601801467&quot;
+## [1] &quot;Torres Strait Islander - NT - 217  :  0.105139224683008&quot;
+## [1] &quot;Torres Strait Islander - WA - 384  :  0.017312839860289&quot;
+## [1] &quot;Torres Strait Islander - OTHER - 0  :  0&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - VIC - 194  :  0.0036476491277418&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - SA - 158  :  0.00998374166626121&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - ACT - 48  :  0.0136709682748092&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - TAS - 277  :  0.0569716190840527&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - NSW - 1165  :  0.0169651563357359&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - QLD - 8749  :  0.204327855008263&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - NT - 893  :  0.432669712635603&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - WA - 630  :  0.0284038778957866&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - OTHER - 0  :  0&quot;</code></pre>
+<pre class="r"><code>  # Number of people by sex
+  for (sex in unique(census2011$Sex))
+  {
+    count &lt;- sum(census2011[which(census2011$Sex == sex),]$Count)
+    percentage &lt;- (count / total) * 100
+    print(paste(sex, &quot;-&quot;, count, &quot; : &quot;, percentage))
+  }</code></pre>
+<pre><code>## [1] &quot;Male - 10536403  :  49.4332680394383&quot;
+## [1] &quot;Female - 10777994  :  50.5667319605617&quot;</code></pre>
+<pre class="r"><code>  # Number of people by age range
+  for (age in unique(census2011$Age))
+  {
+    count &lt;- sum(census2011[which(census2011$Age == age),]$Count)
+    percentage &lt;- (count / total) * 100
+    print(paste(age, &quot;-&quot;, count, &quot; : &quot;, percentage))
+  }</code></pre>
+<pre><code>## [1] &quot;0-9 years - 2771406  :  13.0025071785986&quot;
+## [1] &quot;10-19 years - 2756090  :  12.9306496449325&quot;
+## [1] &quot;20-29 years - 2948922  :  13.8353526961143&quot;
+## [1] &quot;30-39 years - 2948510  :  13.8334197303353&quot;
+## [1] &quot;40-49 years - 3019786  :  14.167822810094&quot;
+## [1] &quot;50-59 years - 2719265  :  12.7578790992774&quot;
+## [1] &quot;60-69 years - 2104686  :  9.87448061514478&quot;
+## [1] &quot;70-79 years - 1236030  :  5.79903808679176&quot;
+## [1] &quot;80-89 years - 691810  :  3.24574042606038&quot;
+## [1] &quot;90-99 years - 116569  :  0.546902640501629&quot;
+## [1] &quot;100 years and over - 1323  :  0.00620707214940211&quot;</code></pre>
+<pre class="r"><code>  # Number of people per Indigenous Status by age range
+  for (status in unique(census2011$Indigenous.Status))
+  {
+    statusTotal &lt;- sum(census2011[which(census2011$Indigenous.Status == status),]$Count)
+    for (age in unique(census2011$Age))
+    {
+      count &lt;- sum(census2011[which(census2011$Indigenous.Status == status &amp; census2011$Age == age),]$Count)
+      percentage &lt;- (count / statusTotal) * 100
+      print(paste(status, &quot;-&quot;, age, &quot;-&quot;, count, &quot; : &quot;, percentage))
+    }
+  }</code></pre>
+<pre><code>## [1] &quot;Non-Indigenous - 0-9 years - 2504732  :  12.6098692626948&quot;
+## [1] &quot;Non-Indigenous - 10-19 years - 2519180  :  12.6826065420155&quot;
+## [1] &quot;Non-Indigenous - 20-29 years - 2720293  :  13.6950935613965&quot;
+## [1] &quot;Non-Indigenous - 30-39 years - 2758370  :  13.8867891168155&quot;
+## [1] &quot;Non-Indigenous - 40-49 years - 2843930  :  14.3175339686065&quot;
+## [1] &quot;Non-Indigenous - 50-59 years - 2577125  :  12.9743259253375&quot;
+## [1] &quot;Non-Indigenous - 60-69 years - 2004160  :  10.0897802964638&quot;
+## [1] &quot;Non-Indigenous - 70-79 years - 1172307  :  5.90188411604194&quot;
+## [1] &quot;Non-Indigenous - 80-89 years - 652533  :  3.2851242446673&quot;
+## [1] &quot;Non-Indigenous - 90-99 years - 109381  :  0.55066973625235&quot;
+## [1] &quot;Non-Indigenous - 100 years and over - 1256  :  0.00632322970838584&quot;
+## [1] &quot;Aboriginal - 0-9 years - 118830  :  27.5145236766609&quot;
+## [1] &quot;Aboriginal - 10-19 years - 105118  :  24.3395750218231&quot;
+## [1] &quot;Aboriginal - 20-29 years - 66997  :  15.5128380271417&quot;
+## [1] &quot;Aboriginal - 30-39 years - 49703  :  11.5084942379961&quot;
+## [1] &quot;Aboriginal - 40-49 years - 45386  :  10.5089133349233&quot;
+## [1] &quot;Aboriginal - 50-59 years - 28138  :  6.51522062790445&quot;
+## [1] &quot;Aboriginal - 60-69 years - 12693  :  2.93900403120304&quot;
+## [1] &quot;Aboriginal - 70-79 years - 4176  :  0.966933020901591&quot;
+## [1] &quot;Aboriginal - 80-89 years - 786  :  0.181994577209926&quot;
+## [1] &quot;Aboriginal - 90-99 years - 54  :  0.0125034442357964&quot;
+## [1] &quot;Aboriginal - 100 years and over - 0  :  0&quot;
+## [1] &quot;Not stated - 0-9 years - 135604  :  13.705056875319&quot;
+## [1] &quot;Not stated - 10-19 years - 124100  :  12.5423848723274&quot;
+## [1] &quot;Not stated - 20-29 years - 158273  :  15.9961392497814&quot;
+## [1] &quot;Not stated - 30-39 years - 137840  :  13.9310421498921&quot;
+## [1] &quot;Not stated - 40-49 years - 128617  :  12.9989034256578&quot;
+## [1] &quot;Not stated - 50-59 years - 112834  :  11.4037667581321&quot;
+## [1] &quot;Not stated - 60-69 years - 87262  :  8.81928758041124&quot;
+## [1] &quot;Not stated - 70-79 years - 59310  :  5.99426951472795&quot;
+## [1] &quot;Not stated - 80-89 years - 38404  :  3.88136783752508&quot;
+## [1] &quot;Not stated - 90-99 years - 7134  :  0.721010263329442&quot;
+## [1] &quot;Not stated - 100 years and over - 67  :  0.00677147289642173&quot;
+## [1] &quot;Torres Strait Islander - 0-9 years - 6258  :  35.375918598078&quot;
+## [1] &quot;Torres Strait Islander - 10-19 years - 4355  :  24.6184284906727&quot;
+## [1] &quot;Torres Strait Islander - 20-29 years - 2117  :  11.9672131147541&quot;
+## [1] &quot;Torres Strait Islander - 30-39 years - 1854  :  10.4804974561899&quot;
+## [1] &quot;Torres Strait Islander - 40-49 years - 1394  :  7.88015828151498&quot;
+## [1] &quot;Torres Strait Islander - 50-59 years - 921  :  5.20633126059921&quot;
+## [1] &quot;Torres Strait Islander - 60-69 years - 484  :  2.736009044658&quot;
+## [1] &quot;Torres Strait Islander - 70-79 years - 220  :  1.24364047484454&quot;
+## [1] &quot;Torres Strait Islander - 80-89 years - 87  :  0.491803278688525&quot;
+## [1] &quot;Torres Strait Islander - 90-99 years - 0  :  0&quot;
+## [1] &quot;Torres Strait Islander - 100 years and over - 0  :  0&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 0-9 years - 5982  :  49.3808816245666&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 10-19 years - 3337  :  27.5466402509493&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 20-29 years - 1242  :  10.2526002971768&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 30-39 years - 743  :  6.13339937262671&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 40-49 years - 459  :  3.7890044576523&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 50-59 years - 247  :  2.03896318309394&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 60-69 years - 87  :  0.718177315502724&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 70-79 years - 17  :  0.140333498431567&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 80-89 years - 0  :  0&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 90-99 years - 0  :  0&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 100 years and over - 0  :  0&quot;</code></pre>
+<pre class="r"><code>  # Number of people by Weekly Personal Income
+  for (income in unique(census2011$Weekly.Personal.Income))
+  {
+    count &lt;- sum(census2011[which(census2011$Weekly.Personal.Income == income),]$Count)
+    percentage &lt;- (count / total) * 100
+    print(paste(income, &quot;-&quot;, count, &quot; : &quot;, percentage))
+  }</code></pre>
+<pre><code>## [1] &quot;Not applicable - 4140886  :  19.4276478945194&quot;
+## [1] &quot;Nil income - 1299040  :  6.09465986769412&quot;
+## [1] &quot;$1-$199 - 1270786  :  5.96210157857152&quot;
+## [1] &quot;$200-$299 - 1777575  :  8.33978554495349&quot;
+## [1] &quot;$300-$399 - 1697359  :  7.96343898445731&quot;
+## [1] &quot;$800-$999 - 1421037  :  6.66702886316699&quot;
+## [1] &quot;Not stated - 1360116  :  6.38120796943024&quot;
+## [1] &quot;$400-$599 - 1988094  :  9.32747006635937&quot;
+## [1] &quot;$600-$799 - 1782655  :  8.36361920067455&quot;
+## [1] &quot;$1,000-$1,249 - 1357884  :  6.37073617423941&quot;
+## [1] &quot;$1,250-$1,499 - 947832  :  4.44690975775669&quot;
+## [1] &quot;$1,500-$1,999 - 1109445  :  5.20514373453774&quot;
+## [1] &quot;$2,000 or more - 1070624  :  5.02300862651662&quot;
+## [1] &quot;Negative income - 91064  :  0.427241737122566&quot;</code></pre>
+<pre class="r"><code>  # Number of people per Indigenous Status by Weekly Personal Income
+  for (status in unique(census2011$Indigenous.Status))
+  {
+    statusTotal &lt;- sum(census2011[which(census2011$Indigenous.Status == status),]$Count)
+    for (income in unique(census2011$Weekly.Personal.Income))
+    {
+      count &lt;- sum(census2011[which(census2011$Indigenous.Status == status &amp; 
+                                  census2011$Weekly.Personal.Income == income),]$Count)
+      percentage &lt;- (count / statusTotal) * 100
+      print(paste(status, &quot;-&quot;, income, &quot;-&quot;, count, &quot; : &quot;, percentage))
+    }
+  }</code></pre>
+<pre><code>## [1] &quot;Non-Indigenous - Not applicable - 3746537  :  18.8616353996551&quot;
+## [1] &quot;Non-Indigenous - Nil income - 1267129  :  6.37925775251372&quot;
+## [1] &quot;Non-Indigenous - $1-$199 - 1232231  :  6.20356661368948&quot;
+## [1] &quot;Non-Indigenous - $200-$299 - 1710278  :  8.6102553019098&quot;
+## [1] &quot;Non-Indigenous - $300-$399 - 1647385  :  8.29362561556465&quot;
+## [1] &quot;Non-Indigenous - $800-$999 - 1402291  :  7.05971983360038&quot;
+## [1] &quot;Non-Indigenous - Not stated - 624792  :  3.14546443946003&quot;
+## [1] &quot;Non-Indigenous - $400-$599 - 1942144  :  9.77756579519371&quot;
+## [1] &quot;Non-Indigenous - $600-$799 - 1748901  :  8.80469964986122&quot;
+## [1] &quot;Non-Indigenous - $1,000-$1,249 - 1343556  :  6.76402325961787&quot;
+## [1] &quot;Non-Indigenous - $1,250-$1,499 - 940929  :  4.73703041901415&quot;
+## [1] &quot;Non-Indigenous - $1,500-$1,999 - 1101867  :  5.54725967284234&quot;
+## [1] &quot;Non-Indigenous - $2,000 or more - 1065193  :  5.36262740665974&quot;
+## [1] &quot;Non-Indigenous - Negative income - 90034  :  0.453268840417843&quot;
+## [1] &quot;Aboriginal - Not applicable - 176975  :  40.9777230301866&quot;
+## [1] &quot;Aboriginal - Nil income - 21208  :  4.91061195097724&quot;
+## [1] &quot;Aboriginal - $1-$199 - 30868  :  7.14733919760304&quot;
+## [1] &quot;Aboriginal - $200-$299 - 48259  :  11.1741428773204&quot;
+## [1] &quot;Aboriginal - $300-$399 - 32324  :  7.4844691014423&quot;
+## [1] &quot;Aboriginal - $800-$999 - 13748  :  3.18328428432832&quot;
+## [1] &quot;Aboriginal - Not stated - 27235  :  6.30613525485029&quot;
+## [1] &quot;Aboriginal - $400-$599 - 31573  :  7.31057860845927&quot;
+## [1] &quot;Aboriginal - $600-$799 - 23866  :  5.52605926169477&quot;
+## [1] &quot;Aboriginal - $1,000-$1,249 - 10827  :  2.50694056927719&quot;
+## [1] &quot;Aboriginal - $1,250-$1,499 - 5284  :  1.22348517299904&quot;
+## [1] &quot;Aboriginal - $1,500-$1,999 - 5753  :  1.33207990163957&quot;
+## [1] &quot;Aboriginal - $2,000 or more - 3271  :  0.757384557320188&quot;
+## [1] &quot;Aboriginal - Negative income - 690  :  0.159766231901843&quot;
+## [1] &quot;Not stated - Not applicable - 200155  :  20.2290172773626&quot;
+## [1] &quot;Not stated - Nil income - 9279  :  0.937798462774586&quot;
+## [1] &quot;Not stated - $1-$199 - 6565  :  0.663503277089682&quot;
+## [1] &quot;Not stated - $200-$299 - 16897  :  1.7077250377737&quot;
+## [1] &quot;Not stated - $300-$399 - 16360  :  1.65345218784268&quot;
+## [1] &quot;Not stated - $800-$999 - 4353  :  0.439943604748116&quot;
+## [1] &quot;Not stated - Not stated - 706431  :  71.3966920849567&quot;
+## [1] &quot;Not stated - $400-$599 - 12585  :  1.27192517017116&quot;
+## [1] &quot;Not stated - $600-$799 - 8482  :  0.857248255335062&quot;
+## [1] &quot;Not stated - $1,000-$1,249 - 3055  :  0.308758950724901&quot;
+## [1] &quot;Not stated - $1,250-$1,499 - 1370  :  0.138461460717877&quot;
+## [1] &quot;Not stated - $1,500-$1,999 - 1567  :  0.15837161236855&quot;
+## [1] &quot;Not stated - $2,000 or more - 2036  :  0.205771922643502&quot;
+## [1] &quot;Not stated - Negative income - 310  :  0.0313306954909065&quot;
+## [1] &quot;Torres Strait Islander - Not applicable - 9028  :  51.0344827586207&quot;
+## [1] &quot;Torres Strait Islander - Nil income - 864  :  4.88411531938949&quot;
+## [1] &quot;Torres Strait Islander - $1-$199 - 600  :  3.39174674957603&quot;
+## [1] &quot;Torres Strait Islander - $200-$299 - 1476  :  8.34369700395704&quot;
+## [1] &quot;Torres Strait Islander - $300-$399 - 934  :  5.27981910684002&quot;
+## [1] &quot;Torres Strait Islander - $800-$999 - 457  :  2.58338044092708&quot;
+## [1] &quot;Torres Strait Islander - Not stated - 1189  :  6.72131147540984&quot;
+## [1] &quot;Torres Strait Islander - $400-$599 - 1295  :  7.32052006783493&quot;
+## [1] &quot;Torres Strait Islander - $600-$799 - 1019  :  5.76031656302996&quot;
+## [1] &quot;Torres Strait Islander - $1,000-$1,249 - 339  :  1.91633691351046&quot;
+## [1] &quot;Torres Strait Islander - $1,250-$1,499 - 182  :  1.0288298473714&quot;
+## [1] &quot;Torres Strait Islander - $1,500-$1,999 - 191  :  1.07970604861504&quot;
+## [1] &quot;Torres Strait Islander - $2,000 or more - 92  :  0.520067834934992&quot;
+## [1] &quot;Torres Strait Islander - Negative income - 24  :  0.135669869983041&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - Not applicable - 8191  :  67.6159815089979&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - Nil income - 560  :  4.62275053656926&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $1-$199 - 522  :  4.30906389301634&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $200-$299 - 665  :  5.48951626217599&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $300-$399 - 356  :  2.93874855539046&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $800-$999 - 188  :  1.55192339441968&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - Not stated - 469  :  3.87155357437675&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $400-$599 - 497  :  4.10269110120522&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $600-$799 - 387  :  3.19465081723626&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $1,000-$1,249 - 107  :  0.883275548951626&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $1,250-$1,499 - 67  :  0.553079082053822&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $1,500-$1,999 - 67  :  0.553079082053822&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $2,000 or more - 32  :  0.264157173518243&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - Negative income - 6  :  0.0495294700346706&quot;</code></pre>
 </div>
 <div id="sa2-level-2016-census" class="section level3">
 <h3>SA2 Level (2016 Census)</h3>
+<pre class="r"><code>dim(sa2Data2016) # data frame dimensions</code></pre>
+<pre><code>## [1] 2310    8</code></pre>
+<pre class="r"><code>str(sa2Data2016) # structure of data</code></pre>
+<pre><code>## 'data.frame':    2310 obs. of  8 variables:
+##  $ SA2                                       : Factor w/ 2314 levels &quot;ACT - South West&quot;,..: 5 9 14 21 27 36 38 42 43 47 ...
+##  $ Non-Indigenous                            : int  25 104 110 42 39 112 91 83 64 17 ...
+##  $ Aboriginal                                : int  19 75 49 93 35 147 90 70 54 32 ...
+##  $ Torres Strait Islander                    : int  0 8 0 0 3 0 3 3 0 0 ...
+##  $ Both Aboriginal and Torres Strait Islander: int  0 4 0 0 0 7 0 0 0 0 ...
+##  $ Not stated                                : int  74 511 441 173 105 252 341 193 126 82 ...
+##  $ Total                                     : int  2397 6651 6996 2979 2804 7199 5329 4769 3355 2027 ...
+##  $ State                                     : Factor w/ 9 levels &quot;ACT&quot;,&quot;NSW&quot;,&quot;NT&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...</code></pre>
+<pre class="r"><code>head(sa2Data2016)</code></pre>
+<pre><code>##         SA2 Non-Indigenous Aboriginal Torres Strait Islander
+## 2    Aranda             25         19                      0
+## 3 Belconnen            104         75                      8
+## 4     Bruce            110         49                      0
+## 5 Charnwood             42         93                      0
+## 6      Cook             39         35                      3
+## 7    Dunlop            112        147                      0
+##   Both Aboriginal and Torres Strait Islander Not stated Total State
+## 2                                          0         74  2397   ACT
+## 3                                          4        511  6651   ACT
+## 4                                          0        441  6996   ACT
+## 5                                          0        173  2979   ACT
+## 6                                          0        105  2804   ACT
+## 7                                          7        252  7199   ACT</code></pre>
+<pre class="r"><code>summary(sa2Data2016)</code></pre>
+<pre><code>##                SA2       Non-Indigenous    Aboriginal    
+##  ACT - South West:   1   Min.   :  2.0   Min.   :   0.0  
+##  Acton           :   1   1st Qu.: 68.0   1st Qu.:  58.0  
+##  Ainslie         :   1   Median :164.0   Median : 133.0  
+##  Amaroo          :   1   Mean   :201.2   Mean   : 255.5  
+##  Aranda          :   1   3rd Qu.:324.0   3rd Qu.: 295.8  
+##  Arboretum       :   1   Max.   :562.0   Max.   :6777.0  
+##  (Other)         :2304                                   
+##  Torres Strait Islander Both Aboriginal and Torres Strait Islander
+##  Min.   :   0.00        Min.   :   0.00                           
+##  1st Qu.:   0.00        1st Qu.:   0.00                           
+##  Median :   5.00        Median :   4.00                           
+##  Mean   :  13.89        Mean   :  11.47                           
+##  3rd Qu.:  12.00        3rd Qu.:  10.00                           
+##  Max.   :3588.00        Max.   :1390.00                           
+##                                                                   
+##    Not stated         Total           State    
+##  Min.   :   0.0   Min.   :    0   NSW    :578  
+##  1st Qu.: 302.2   1st Qu.: 4861   QLD    :530  
+##  Median : 522.0   Median : 8786   VIC    :464  
+##  Mean   : 611.1   Mean   :10131   WA     :254  
+##  3rd Qu.: 804.0   3rd Qu.:14594   SA     :174  
+##  Max.   :4655.0   Max.   :37325   ACT    :133  
+##                                   (Other):177</code></pre>
+<pre class="r"><code>describe(sa2Data2011[c(2:7)], IQR=TRUE) # Summary statistics of population counts in each SA2 area</code></pre>
+<pre><code>##                                            vars    n    mean      sd
+## Non-Indigenous                                1 2214  192.59  147.01
+## Aboriginal                                    2 2214  223.95  378.27
+## Torres Strait Islander                        3 2214   14.09   85.07
+## Both Aboriginal and Torres Strait Islander    4 2214    9.47   32.76
+## Not stated                                    5 2214  478.15  418.48
+## Total                                         6 2214 9714.44 6548.69
+##                                            median trimmed     mad min
+## Non-Indigenous                                158  181.01  161.60   2
+## Aboriginal                                    112  149.28  120.09   0
+## Torres Strait Islander                          5    6.60    7.41   0
+## Both Aboriginal and Torres Strait Islander      3    4.23    4.45   0
+## Not stated                                    374  417.53  300.97   0
+## Total                                        8219 9142.22 6169.10   0
+##                                              max range  skew kurtosis
+## Non-Indigenous                               531   529  0.55    -0.89
+## Aboriginal                                  6644  6644  6.02    60.52
+## Torres Strait Islander                      3302  3302 29.93  1067.59
+## Both Aboriginal and Torres Strait Islander   929   929 14.93   332.97
+## Not stated                                  4307  4307  2.35     9.94
+## Total                                      38320 38320  0.80     0.20
+##                                                se     IQR
+## Non-Indigenous                               3.12  243.75
+## Aboriginal                                   8.04  205.75
+## Torres Strait Islander                       1.81   12.00
+## Both Aboriginal and Torres Strait Islander   0.70    8.00
+## Not stated                                   8.89  434.75
+## Total                                      139.18 9269.25</code></pre>
+<pre class="r"><code>count(sa2Data2016, 'State') # Number of SA2 areas in each state</code></pre>
+<pre><code>##   State freq
+## 1   ACT  133
+## 2   NSW  578
+## 3    NT   70
+## 4 OTHER    6
+## 5   QLD  530
+## 6    SA  174
+## 7   TAS  101
+## 8   VIC  464
+## 9    WA  254</code></pre>
+<pre class="r"><code>sum(count(sa2Data2016, 'State')$freq) # Number of SA2 areas in Australia for 2016 Census</code></pre>
+<pre><code>## [1] 2310</code></pre>
 </div>
 <div id="census-data-1" class="section level3">
 <h3>2016 Census Data</h3>
+<pre class="r"><code>dim(census2016) # data frame dimensions</code></pre>
+<pre><code>## [1] 595591     16</code></pre>
+<pre class="r"><code>str(census2016) # structure of data</code></pre>
+<pre><code>## 'data.frame':    595591 obs. of  16 variables:
+##  $ SA2                      : Factor w/ 2237 levels &quot;Abbotsford&quot;,&quot;Aberfoyle Park&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ State                    : Factor w/ 9 levels &quot;ACT&quot;,&quot;NSW&quot;,&quot;NT&quot;,..: 8 8 8 8 8 8 8 8 8 8 ...
+##  $ City                     : int  1 1 1 1 1 1 1 1 1 1 ...
+##  $ InnerRegional            : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ OuterRegional            : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ Remote                   : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ VeryRemote               : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ MigratoryOffshoreShipping: int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ NoUsualAddress           : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ Indigenous.Status        : Factor w/ 5 levels &quot;Aboriginal&quot;,&quot;Both Aboriginal and Torres Strait Islander&quot;,..: 3 3 3 3 3 3 3 3 3 3 ...
+##  $ Sex                      : Factor w/ 2 levels &quot;Female&quot;,&quot;Male&quot;: 2 2 2 2 2 2 2 2 2 2 ...
+##  $ Age                      : Factor w/ 11 levels &quot;0-9 years&quot;,&quot;10-19 years&quot;,..: 1 2 2 2 2 2 2 4 4 4 ...
+##  $ Weekly.Personal.Income   : Factor w/ 17 levels &quot;$1-$149&quot;,&quot;$1,000-$1,249&quot;,..: 16 15 1 6 13 17 16 14 15 1 ...
+##  $ Count                    : int  243 34 13 8 5 6 62 5 82 17 ...
+##  $ Indigenous               : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ Year                     : chr  &quot;2016&quot; &quot;2016&quot; &quot;2016&quot; &quot;2016&quot; ...</code></pre>
+<pre class="r"><code>head(census2016, n=5) </code></pre>
+<pre><code>##          SA2 State City InnerRegional OuterRegional Remote VeryRemote
+## 1 Abbotsford   VIC    1             0             0      0          0
+## 2 Abbotsford   VIC    1             0             0      0          0
+## 3 Abbotsford   VIC    1             0             0      0          0
+## 4 Abbotsford   VIC    1             0             0      0          0
+## 5 Abbotsford   VIC    1             0             0      0          0
+##   MigratoryOffshoreShipping NoUsualAddress Indigenous.Status  Sex
+## 1                         0              0    Non-Indigenous Male
+## 2                         0              0    Non-Indigenous Male
+## 3                         0              0    Non-Indigenous Male
+## 4                         0              0    Non-Indigenous Male
+## 5                         0              0    Non-Indigenous Male
+##           Age Weekly.Personal.Income Count Indigenous Year
+## 1   0-9 years         Not applicable   243          0 2016
+## 2 10-19 years             Nil income    34          0 2016
+## 3 10-19 years                $1-$149    13          0 2016
+## 4 10-19 years              $150-$299     8          0 2016
+## 5 10-19 years              $800-$999     5          0 2016</code></pre>
+<pre class="r"><code>unique(census2016$State) # Levels of State variable</code></pre>
+<pre><code>## [1] VIC   SA    NSW   ACT   TAS   QLD   NT    WA    OTHER
+## Levels: ACT NSW NT OTHER QLD SA TAS VIC WA</code></pre>
+<pre class="r"><code>unique(census2016$Indigenous.Status) # Levels of Indigenous Status variable</code></pre>
+<pre><code>## [1] Non-Indigenous                            
+## [2] Aboriginal                                
+## [3] Not stated                                
+## [4] Torres Strait Islander                    
+## [5] Both Aboriginal and Torres Strait Islander
+## 5 Levels: Aboriginal ... Torres Strait Islander</code></pre>
+<pre class="r"><code>unique(census2016$Sex) # Levels of Sex variable</code></pre>
+<pre><code>## [1] Male   Female
+## Levels: Female Male</code></pre>
+<pre class="r"><code>unique(census2016$Age) # Levels of Age variable</code></pre>
+<pre><code>##  [1] 0-9 years          10-19 years        20-29 years       
+##  [4] 30-39 years        40-49 years        50-59 years       
+##  [7] 60-69 years        70-79 years        80-89 years       
+## [10] 90-99 years        100 years and over
+## 11 Levels: 0-9 years 10-19 years 100 years and over ... 90-99 years</code></pre>
+<pre class="r"><code>unique(census2016$Weekly.Personal.Income) # Levels of Weekly Personal Income variable</code></pre>
+<pre><code>##  [1] Not applicable  Nil income      $1-$149         $150-$299      
+##  [5] $800-$999       Not stated      Negative income $300-$399      
+##  [9] $400-$499       $500-$649       $650-$799       $1,000-$1,249  
+## [13] $1,250-$1,499   $1,500-$1,749   $1,750-$1,999   $2,000-$2,999  
+## [17] $3,000 or more 
+## 17 Levels: $1-$149 $1,000-$1,249 $1,250-$1,499 ... Not stated</code></pre>
+<pre class="r"><code>summary(census2016)   # When transforming the data counts of zero were excluded</code></pre>
+<pre><code>##            SA2             State             City       InnerRegional   
+##  Cape York   :   442   NSW    :166709   Min.   :0.000   Min.   :0.0000  
+##  Mount Isa   :   441   QLD    :141694   1st Qu.:0.000   1st Qu.:0.0000  
+##  Broome      :   434   VIC    :121416   Median :1.000   Median :0.0000  
+##  Armidale    :   431   WA     : 62696   Mean   :0.604   Mean   :0.2741  
+##  Taree       :   431   SA     : 43931   3rd Qu.:1.000   3rd Qu.:1.0000  
+##  Port Augusta:   425   TAS    : 23955   Max.   :1.000   Max.   :1.0000  
+##  (Other)     :592987   (Other): 35190                                   
+##  OuterRegional        Remote          VeryRemote     
+##  Min.   :0.0000   Min.   :0.00000   Min.   :0.00000  
+##  1st Qu.:0.0000   1st Qu.:0.00000   1st Qu.:0.00000  
+##  Median :0.0000   Median :0.00000   Median :0.00000  
+##  Mean   :0.1847   Mean   :0.06125   Mean   :0.02882  
+##  3rd Qu.:0.0000   3rd Qu.:0.00000   3rd Qu.:0.00000  
+##  Max.   :1.0000   Max.   :1.00000   Max.   :1.00000  
+##                                                      
+##  MigratoryOffshoreShipping NoUsualAddress    
+##  Min.   :0.000000          Min.   :0.000000  
+##  1st Qu.:0.000000          1st Qu.:0.000000  
+##  Median :0.000000          Median :0.000000  
+##  Mean   :0.000267          Mean   :0.003198  
+##  3rd Qu.:0.000000          3rd Qu.:0.000000  
+##  Max.   :1.000000          Max.   :1.000000  
+##                                              
+##                                   Indigenous.Status      Sex        
+##  Aboriginal                                : 58983   Female:298061  
+##  Both Aboriginal and Torres Strait Islander:  2360   Male  :297530  
+##  Non-Indigenous                            :475435                  
+##  Not stated                                : 56270                  
+##  Torres Strait Islander                    :  2543                  
+##                                                                     
+##                                                                     
+##           Age         Weekly.Personal.Income     Count       
+##  20-29 years: 81035   Not stated: 73435      Min.   :   3.0  
+##  40-49 years: 80634   $300-$399 : 44694      1st Qu.:   6.0  
+##  50-59 years: 79474   $400-$499 : 44230      Median :  18.0  
+##  30-39 years: 79405   $150-$299 : 43000      Mean   :  38.9  
+##  60-69 years: 74845   $500-$649 : 41304      3rd Qu.:  44.0  
+##  10-19 years: 63774   $650-$799 : 39153      Max.   :3770.0  
+##  (Other)    :136424   (Other)   :309775                      
+##    Indigenous         Year          
+##  Min.   :0.0000   Length:595591     
+##  1st Qu.:0.0000   Class :character  
+##  Median :0.0000   Mode  :character  
+##  Mean   :0.1073                     
+##  3rd Qu.:0.0000                     
+##  Max.   :1.0000                     
+## </code></pre>
+<pre class="r"><code>describe(census2016$Count, IQR=TRUE) </code></pre>
+<pre><code>##    vars      n mean   sd median trimmed   mad min  max range  skew
+## X1    1 595591 38.9 80.4     18   25.07 20.76   3 3770  3767 10.59
+##    kurtosis  se IQR
+## X1   190.78 0.1  38</code></pre>
+<pre class="r"><code>sum(census2016$Count) # Number of people counted in 2016 Census</code></pre>
+<pre><code>## [1] 23166744</code></pre>
+<pre class="r"><code>length(unique(census2016$SA2)) # Number of SA2 areas with population counts &gt; 0</code></pre>
+<pre><code>## [1] 2237</code></pre>
+<pre class="r"><code>length(unique(sa2Data2016$SA2)) - length(unique(census2011$SA2)) # Number of SA2 areas with no population recorded</code></pre>
+<pre><code>## [1] 162</code></pre>
+<pre class="r"><code># Number of people counted in each state during 2016 Census
+total &lt;- sum(census2016$Count)
+for (state in unique(census2016$State))
+{
+  count &lt;- sum(census2016[which(census2016$State == state),]$Count)
+  percentage &lt;- (count / total) * 100
+  print(paste(state, &quot;-&quot;, count, &quot; : &quot;, percentage))
+}</code></pre>
+<pre><code>## [1] &quot;VIC - 5881465  :  25.38753395816&quot;
+## [1] &quot;SA - 1659958  :  7.16526241236144&quot;
+## [1] &quot;NSW - 7416232  :  32.0124053686612&quot;
+## [1] &quot;ACT - 389789  :  1.68253682951735&quot;
+## [1] &quot;TAS - 499081  :  2.15429928349016&quot;
+## [1] &quot;QLD - 4644165  :  20.0466884772413&quot;
+## [1] &quot;NT - 221625  :  0.95665148283246&quot;
+## [1] &quot;WA - 2450149  :  10.5761474292633&quot;
+## [1] &quot;OTHER - 4280  :  0.0184747584727487&quot;</code></pre>
+<pre class="r"><code># Number of people by indigenous status
+for (status in unique(census2016$Indigenous.Status))
+{
+  count &lt;- sum(census2016[which(census2016$Indigenous.Status == status),]$Count)
+  percentage &lt;- (count / total) * 100
+  print(paste(status, &quot;-&quot;, count, &quot; : &quot;, percentage))
+}</code></pre>
+<pre><code>## [1] &quot;Non-Indigenous - 21292535  :  91.9099162143804&quot;
+## [1] &quot;Aboriginal - 505354  :  2.18137689094333&quot;
+## [1] &quot;Not stated - 1335943  :  5.76664118185965&quot;
+## [1] &quot;Torres Strait Islander - 17567  :  0.0758285238529851&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 15345  :  0.0662371889636282&quot;</code></pre>
+<pre class="r"><code># Number of people who are indigenous or not
+for (indigenous in unique(census2016$Indigenous))
+{
+  count &lt;- sum(census2016[which(census2016$Indigenous == indigenous),]$Count)
+  percentage &lt;- (count / total) * 100
+  print(paste(indigenous, &quot;-&quot;, count, &quot; : &quot;, percentage))
+}</code></pre>
+<pre><code>## [1] &quot;0 - 22628478  :  97.6765573962401&quot;
+## [1] &quot;1 - 538266  :  2.32344260375994&quot;</code></pre>
+<pre class="r"><code># Number of people per state by indigenous status
+for (status in unique(census2016$Indigenous.Status))
+{
+  for (state in unique(census2016$State))
+  {
+    stateTotal &lt;- sum(census2016[which(census2016$State == state),]$Count)
+    count &lt;- sum(census2016[which(census2016$Indigenous.Status == status &amp; census2016$State == state),]$Count)
+    percentage &lt;- (count / stateTotal) * 100
+    print(paste(status, &quot;-&quot;, state, &quot;-&quot;, count, &quot; : &quot;, percentage))
+  }
+}</code></pre>
+<pre><code>## [1] &quot;Non-Indigenous - VIC - 5521919  :  93.8867952117372&quot;
+## [1] &quot;Non-Indigenous - SA - 1553609  :  93.5932716369932&quot;
+## [1] &quot;Non-Indigenous - NSW - 6814569  :  91.8872144237127&quot;
+## [1] &quot;Non-Indigenous - ACT - 367428  :  94.2633065581635&quot;
+## [1] &quot;Non-Indigenous - TAS - 452572  :  90.6810718099868&quot;
+## [1] &quot;Non-Indigenous - QLD - 4201041  :  90.458478542429&quot;
+## [1] &quot;Non-Indigenous - NT - 145136  :  65.4871968415116&quot;
+## [1] &quot;Non-Indigenous - WA - 2232599  :  91.1209481545816&quot;
+## [1] &quot;Non-Indigenous - OTHER - 3662  :  85.5607476635514&quot;
+## [1] &quot;Aboriginal - VIC - 30907  :  0.525498323972004&quot;
+## [1] &quot;Aboriginal - SA - 26827  :  1.61612522726479&quot;
+## [1] &quot;Aboriginal - NSW - 183194  :  2.47017622965409&quot;
+## [1] &quot;Aboriginal - ACT - 3581  :  0.918702169635367&quot;
+## [1] &quot;Aboriginal - TAS - 17322  :  3.47077929233932&quot;
+## [1] &quot;Aboriginal - QLD - 126885  :  2.73213807002981&quot;
+## [1] &quot;Aboriginal - NT - 53119  :  23.9679639029893&quot;
+## [1] &quot;Aboriginal - WA - 63329  :  2.58469995090095&quot;
+## [1] &quot;Aboriginal - OTHER - 190  :  4.4392523364486&quot;
+## [1] &quot;Not stated - VIC - 328070  :  5.57803200393099&quot;
+## [1] &quot;Not stated - SA - 79174  :  4.76963874989608&quot;
+## [1] &quot;Not stated - NSW - 415741  :  5.60582516836043&quot;
+## [1] &quot;Not stated - ACT - 18735  :  4.80644656467986&quot;
+## [1] &quot;Not stated - TAS - 28554  :  5.7213157784007&quot;
+## [1] &quot;Not stated - QLD - 289986  :  6.24409339461453&quot;
+## [1] &quot;Not stated - NT - 22231  :  10.0309080654258&quot;
+## [1] &quot;Not stated - WA - 153024  :  6.24549772279155&quot;
+## [1] &quot;Not stated - OTHER - 428  :  10&quot;
+## [1] &quot;Torres Strait Islander - VIC - 328  :  0.00557684182427337&quot;
+## [1] &quot;Torres Strait Islander - SA - 173  :  0.0104219504348905&quot;
+## [1] &quot;Torres Strait Islander - NSW - 1310  :  0.0176639565752528&quot;
+## [1] &quot;Torres Strait Islander - ACT - 20  :  0.00513098112055497&quot;
+## [1] &quot;Torres Strait Islander - TAS - 322  :  0.0645185851595232&quot;
+## [1] &quot;Torres Strait Islander - QLD - 14834  :  0.319411562681343&quot;
+## [1] &quot;Torres Strait Islander - NT - 192  :  0.0866328257191201&quot;
+## [1] &quot;Torres Strait Islander - WA - 388  :  0.0158357716204198&quot;
+## [1] &quot;Torres Strait Islander - OTHER - 0  :  0&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - VIC - 241  :  0.00409761853551794&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - SA - 175  :  0.0105424354110164&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - NSW - 1418  :  0.0191202216974873&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - ACT - 25  :  0.00641372640069371&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - TAS - 311  :  0.062314534113701&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - QLD - 11419  :  0.245878430245265&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - NT - 947  :  0.427298364354202&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - WA - 809  :  0.033018400105463&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - OTHER - 0  :  0&quot;</code></pre>
+<pre class="r"><code># Number of people by sex
+for (sex in unique(census2016$Sex))
+{
+  count &lt;- sum(census2016[which(census2016$Sex == sex),]$Count)
+  percentage &lt;- (count / total) * 100
+  print(paste(sex, &quot;-&quot;, count, &quot; : &quot;, percentage))
+}</code></pre>
+<pre><code>## [1] &quot;Male - 11427852  :  49.3286928883921&quot;
+## [1] &quot;Female - 11738892  :  50.6713071116079&quot;</code></pre>
+<pre class="r"><code># Number of people by age range
+for (age in unique(census2016$Age))
+{
+  count &lt;- sum(census2016[which(census2016$Age == age),]$Count)
+  percentage &lt;- (count / total) * 100
+  print(paste(age, &quot;-&quot;, count, &quot; : &quot;, percentage))
+}</code></pre>
+<pre><code>## [1] &quot;0-9 years - 2965926  :  12.8025155369266&quot;
+## [1] &quot;10-19 years - 2794057  :  12.0606374378722&quot;
+## [1] &quot;20-29 years - 3199621  :  13.8112675652651&quot;
+## [1] &quot;30-39 years - 3235100  :  13.964413816633&quot;
+## [1] &quot;40-49 years - 3133297  :  13.5249778734552&quot;
+## [1] &quot;50-59 years - 2947267  :  12.7219733597436&quot;
+## [1] &quot;60-69 years - 2463191  :  10.6324436442169&quot;
+## [1] &quot;70-79 years - 1518655  :  6.55532344122247&quot;
+## [1] &quot;80-89 years - 749631  :  3.23580646464605&quot;
+## [1] &quot;90-99 years - 158780  :  0.685379007080149&quot;
+## [1] &quot;100 years and over - 1219  :  0.00526185293885062&quot;</code></pre>
+<pre class="r"><code># Number of people per Indigenous Status by age range
+for (status in unique(census2016$Indigenous.Status))
+{
+  statusTotal &lt;- sum(census2016[which(census2016$Indigenous.Status == status),]$Count)
+  for (age in unique(census2016$Age))
+  {
+    count &lt;- sum(census2016[which(census2016$Indigenous.Status == status &amp; census2016$Age == age),]$Count)
+    percentage &lt;- (count / statusTotal) * 100
+    print(paste(status, &quot;-&quot;, age, &quot;-&quot;, count, &quot; : &quot;, percentage))
+  }
+}</code></pre>
+<pre><code>## [1] &quot;Non-Indigenous - 0-9 years - 2660745  :  12.4961400791404&quot;
+## [1] &quot;Non-Indigenous - 10-19 years - 2530172  :  11.8829063800999&quot;
+## [1] &quot;Non-Indigenous - 20-29 years - 2913830  :  13.6847491386066&quot;
+## [1] &quot;Non-Indigenous - 30-39 years - 2986146  :  14.0243799059154&quot;
+## [1] &quot;Non-Indigenous - 40-49 years - 2906266  :  13.6492249513738&quot;
+## [1] &quot;Non-Indigenous - 50-59 years - 2739573  :  12.8663543349817&quot;
+## [1] &quot;Non-Indigenous - 60-69 years - 2297353  :  10.7894762178388&quot;
+## [1] &quot;Non-Indigenous - 70-79 years - 1416337  :  6.65180073673708&quot;
+## [1] &quot;Non-Indigenous - 80-89 years - 695459  :  3.26621043478383&quot;
+## [1] &quot;Non-Indigenous - 90-99 years - 145538  :  0.6835165469964&quot;
+## [1] &quot;Non-Indigenous - 100 years and over - 1116  :  0.00524127352614426&quot;
+## [1] &quot;Aboriginal - 0-9 years - 134438  :  26.6027378827515&quot;
+## [1] &quot;Aboriginal - 10-19 years - 116189  :  22.9916058841921&quot;
+## [1] &quot;Aboriginal - 20-29 years - 82620  :  16.3489355976207&quot;
+## [1] &quot;Aboriginal - 30-39 years - 55137  :  10.9105696205036&quot;
+## [1] &quot;Aboriginal - 40-49 years - 51929  :  10.2757670860427&quot;
+## [1] &quot;Aboriginal - 50-59 years - 38325  :  7.58379274726232&quot;
+## [1] &quot;Aboriginal - 60-69 years - 19379  :  3.8347376294637&quot;
+## [1] &quot;Aboriginal - 70-79 years - 6241  :  1.23497587829521&quot;
+## [1] &quot;Aboriginal - 80-89 years - 1064  :  0.210545479010753&quot;
+## [1] &quot;Aboriginal - 90-99 years - 32  :  0.00633219485746625&quot;
+## [1] &quot;Aboriginal - 100 years and over - 0  :  0&quot;
+## [1] &quot;Not stated - 0-9 years - 157725  :  11.806267183555&quot;
+## [1] &quot;Not stated - 10-19 years - 139189  :  10.4187828372917&quot;
+## [1] &quot;Not stated - 20-29 years - 198844  :  14.8841679622559&quot;
+## [1] &quot;Not stated - 30-39 years - 191144  :  14.3077960661495&quot;
+## [1] &quot;Not stated - 40-49 years - 173144  :  12.9604331921347&quot;
+## [1] &quot;Not stated - 50-59 years - 167988  :  12.5744885822224&quot;
+## [1] &quot;Not stated - 60-69 years - 145752  :  10.9100463118561&quot;
+## [1] &quot;Not stated - 70-79 years - 95798  :  7.17081492249295&quot;
+## [1] &quot;Not stated - 80-89 years - 53046  :  3.97067838972172&quot;
+## [1] &quot;Not stated - 90-99 years - 13210  :  0.988814642540887&quot;
+## [1] &quot;Not stated - 100 years and over - 103  :  0.00770990977908489&quot;
+## [1] &quot;Torres Strait Islander - 0-9 years - 5865  :  33.3864632549667&quot;
+## [1] &quot;Torres Strait Islander - 10-19 years - 4377  :  24.9160357488473&quot;
+## [1] &quot;Torres Strait Islander - 20-29 years - 2431  :  13.8384470882905&quot;
+## [1] &quot;Torres Strait Islander - 30-39 years - 1664  :  9.47230602834861&quot;
+## [1] &quot;Torres Strait Islander - 40-49 years - 1394  :  7.93533329538339&quot;
+## [1] &quot;Torres Strait Islander - 50-59 years - 976  :  5.55587180508909&quot;
+## [1] &quot;Torres Strait Islander - 60-69 years - 567  :  3.22764273922696&quot;
+## [1] &quot;Torres Strait Islander - 70-79 years - 231  :  1.3149655604258&quot;
+## [1] &quot;Torres Strait Islander - 80-89 years - 62  :  0.352934479421643&quot;
+## [1] &quot;Torres Strait Islander - 90-99 years - 0  :  0&quot;
+## [1] &quot;Torres Strait Islander - 100 years and over - 0  :  0&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 0-9 years - 7153  :  46.614532420984&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 10-19 years - 4130  :  26.9143043336592&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 20-29 years - 1896  :  12.355816226784&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 30-39 years - 1009  :  6.57543173672206&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 40-49 years - 564  :  3.67546432062561&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 50-59 years - 405  :  2.63929618768328&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 60-69 years - 140  :  0.912349299446074&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 70-79 years - 48  :  0.312805474095797&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 80-89 years - 0  :  0&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 90-99 years - 0  :  0&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - 100 years and over - 0  :  0&quot;</code></pre>
+<pre class="r"><code># Number of people by Weekly Personal Income
+for (income in unique(census2016$Weekly.Personal.Income))
+{
+  count &lt;- sum(census2016[which(census2016$Weekly.Personal.Income == income),]$Count)
+  percentage &lt;- (count / total) * 100
+  print(paste(income, &quot;-&quot;, count, &quot; : &quot;, percentage))
+}</code></pre>
+<pre><code>## [1] &quot;Not applicable - 4361228  :  18.8253817627544&quot;
+## [1] &quot;Nil income - 1690765  :  7.29824182457405&quot;
+## [1] &quot;$1-$149 - 788778  :  3.4047857566864&quot;
+## [1] &quot;$150-$299 - 1325767  :  5.72271614863099&quot;
+## [1] &quot;$800-$999 - 1538189  :  6.63964258421468&quot;
+## [1] &quot;Not stated - 1694682  :  7.3151496818025&quot;
+## [1] &quot;Negative income - 87657  :  0.378374276506012&quot;
+## [1] &quot;$300-$399 - 1600269  :  6.90761291271661&quot;
+## [1] &quot;$400-$499 - 1534855  :  6.62525126534829&quot;
+## [1] &quot;$500-$649 - 1409002  :  6.08200271907006&quot;
+## [1] &quot;$650-$799 - 1410032  :  6.08644874739411&quot;
+## [1] &quot;$1,000-$1,249 - 1571035  :  6.78142340589597&quot;
+## [1] &quot;$1,250-$1,499 - 1076134  :  4.64516722764321&quot;
+## [1] &quot;$1,500-$1,749 - 911496  :  3.93450197403658&quot;
+## [1] &quot;$1,750-$1,999 - 629923  :  2.71908300967974&quot;
+## [1] &quot;$2,000-$2,999 - 951527  :  4.10729708067737&quot;
+## [1] &quot;$3,000 or more - 585405  :  2.52691962236903&quot;</code></pre>
+<pre class="r"><code># Number of people per Indigenous Status by Weekly Personal Income
+for (status in unique(census2016$Indigenous.Status))
+{
+  statusTotal &lt;- sum(census2016[which(census2016$Indigenous.Status == status),]$Count)
+  for (income in unique(census2016$Weekly.Personal.Income))
+  {
+    count &lt;- sum(census2016[which(census2016$Indigenous.Status == status &amp; 
+                                    census2016$Weekly.Personal.Income == income),]$Count)
+    percentage &lt;- (count / statusTotal) * 100
+    print(paste(status, &quot;-&quot;, income, &quot;-&quot;, count, &quot; : &quot;, percentage))
+  }
+}</code></pre>
+<pre><code>## [1] &quot;Non-Indigenous - Not applicable - 3916105  :  18.3919152886211&quot;
+## [1] &quot;Non-Indigenous - Nil income - 1648981  :  7.74440901470868&quot;
+## [1] &quot;Non-Indigenous - $1-$149 - 768845  :  3.61086643746271&quot;
+## [1] &quot;Non-Indigenous - $150-$299 - 1268076  :  5.95549567019615&quot;
+## [1] &quot;Non-Indigenous - $800-$999 - 1513287  :  7.10712463311672&quot;
+## [1] &quot;Non-Indigenous - Not stated - 602522  :  2.8297335192827&quot;
+## [1] &quot;Non-Indigenous - Negative income - 86290  :  0.40525940194533&quot;
+## [1] &quot;Non-Indigenous - $300-$399 - 1555800  :  7.3067861576839&quot;
+## [1] &quot;Non-Indigenous - $400-$499 - 1497662  :  7.03374210726905&quot;
+## [1] &quot;Non-Indigenous - $500-$649 - 1378670  :  6.4748983622664&quot;
+## [1] &quot;Non-Indigenous - $650-$799 - 1382578  :  6.49325221257121&quot;
+## [1] &quot;Non-Indigenous - $1,000-$1,249 - 1549807  :  7.27864014312997&quot;
+## [1] &quot;Non-Indigenous - $1,250-$1,499 - 1065364  :  5.0034624810996&quot;
+## [1] &quot;Non-Indigenous - $1,500-$1,749 - 904051  :  4.24585893600739&quot;
+## [1] &quot;Non-Indigenous - $1,750-$1,999 - 625902  :  2.93953726035909&quot;
+## [1] &quot;Non-Indigenous - $2,000-$2,999 - 945500  :  4.44052340409444&quot;
+## [1] &quot;Non-Indigenous - $3,000 or more - 583095  :  2.73849497018556&quot;
+## [1] &quot;Aboriginal - Not applicable - 198775  :  39.3338135247767&quot;
+## [1] &quot;Aboriginal - Nil income - 32931  :  6.51642215160066&quot;
+## [1] &quot;Aboriginal - $1-$149 - 17494  :  3.46173177614108&quot;
+## [1] &quot;Aboriginal - $150-$299 - 50379  :  9.96905139763413&quot;
+## [1] &quot;Aboriginal - $800-$999 - 20330  :  4.02292254538403&quot;
+## [1] &quot;Aboriginal - Not stated - 32563  :  6.4436019107398&quot;
+## [1] &quot;Aboriginal - Negative income - 1092  :  0.216086149511036&quot;
+## [1] &quot;Aboriginal - $300-$399 - 33783  :  6.6850168396807&quot;
+## [1] &quot;Aboriginal - $400-$499 - 27448  :  5.43144013899168&quot;
+## [1] &quot;Aboriginal - $500-$649 - 24809  :  4.90923194434001&quot;
+## [1] &quot;Aboriginal - $650-$799 - 22488  :  4.44994993608441&quot;
+## [1] &quot;Aboriginal - $1,000-$1,249 - 17554  :  3.47360464149883&quot;
+## [1] &quot;Aboriginal - $1,250-$1,499 - 9154  :  1.81140349141394&quot;
+## [1] &quot;Aboriginal - $1,500-$1,749 - 6393  :  1.26505380386818&quot;
+## [1] &quot;Aboriginal - $1,750-$1,999 - 3555  :  0.703467272446641&quot;
+## [1] &quot;Aboriginal - $2,000-$2,999 - 5057  :  1.00068466856896&quot;
+## [1] &quot;Aboriginal - $3,000 or more - 1549  :  0.306517807319226&quot;
+## [1] &quot;Not stated - Not applicable - 227963  :  17.0638268249469&quot;
+## [1] &quot;Not stated - Nil income - 6744  :  0.504811956797558&quot;
+## [1] &quot;Not stated - $1-$149 - 1794  :  0.134287166443478&quot;
+## [1] &quot;Not stated - $150-$299 - 4944  :  0.370075669396075&quot;
+## [1] &quot;Not stated - $800-$999 - 3666  :  0.274412905341021&quot;
+## [1] &quot;Not stated - Not stated - 1057432  :  79.1524788108475&quot;
+## [1] &quot;Not stated - Negative income - 217  :  0.0162432079811788&quot;
+## [1] &quot;Not stated - $300-$399 - 9448  :  0.707215801871786&quot;
+## [1] &quot;Not stated - $400-$499 - 8683  :  0.649952879726156&quot;
+## [1] &quot;Not stated - $500-$649 - 4138  :  0.30974375403741&quot;
+## [1] &quot;Not stated - $650-$799 - 3874  :  0.289982431885193&quot;
+## [1] &quot;Not stated - $1,000-$1,249 - 3057  :  0.228827128103519&quot;
+## [1] &quot;Not stated - $1,250-$1,499 - 1265  :  0.0946896686460425&quot;
+## [1] &quot;Not stated - $1,500-$1,749 - 823  :  0.0616044247396783&quot;
+## [1] &quot;Not stated - $1,750-$1,999 - 367  :  0.0274712319313025&quot;
+## [1] &quot;Not stated - $2,000-$2,999 - 809  :  0.0605564758376667&quot;
+## [1] &quot;Not stated - $3,000 or more - 719  :  0.0538196614675926&quot;
+## [1] &quot;Torres Strait Islander - Not applicable - 8514  :  48.4658735128366&quot;
+## [1] &quot;Torres Strait Islander - Nil income - 1211  :  6.89360733192919&quot;
+## [1] &quot;Torres Strait Islander - $1-$149 - 366  :  2.08345192690841&quot;
+## [1] &quot;Torres Strait Islander - $150-$299 - 1388  :  7.90117834576194&quot;
+## [1] &quot;Torres Strait Islander - $800-$999 - 616  :  3.50657482780213&quot;
+## [1] &quot;Torres Strait Islander - Not stated - 1359  :  7.73609608925827&quot;
+## [1] &quot;Torres Strait Islander - Negative income - 35  :  0.199237206125121&quot;
+## [1] &quot;Torres Strait Islander - $300-$399 - 786  :  4.47429840040986&quot;
+## [1] &quot;Torres Strait Islander - $400-$499 - 638  :  3.63180964308078&quot;
+## [1] &quot;Torres Strait Islander - $500-$649 - 885  :  5.03785506916377&quot;
+## [1] &quot;Torres Strait Islander - $650-$799 - 740  :  4.21244378664541&quot;
+## [1] &quot;Torres Strait Islander - $1,000-$1,249 - 449  :  2.55592873000512&quot;
+## [1] &quot;Torres Strait Islander - $1,250-$1,499 - 222  :  1.26373313599362&quot;
+## [1] &quot;Torres Strait Islander - $1,500-$1,749 - 152  :  0.865258723743382&quot;
+## [1] &quot;Torres Strait Islander - $1,750-$1,999 - 63  :  0.358626971025218&quot;
+## [1] &quot;Torres Strait Islander - $2,000-$2,999 - 108  :  0.614789093186088&quot;
+## [1] &quot;Torres Strait Islander - $3,000 or more - 35  :  0.199237206125121&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - Not applicable - 9871  :  64.3271423916585&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - Nil income - 898  :  5.85206907787553&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $1-$149 - 279  :  1.81818181818182&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $150-$299 - 980  :  6.38644509612252&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $800-$999 - 290  :  1.88986640599544&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - Not stated - 806  :  5.25252525252525&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - Negative income - 23  :  0.149885956337569&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $300-$399 - 452  :  2.94558488106875&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $400-$499 - 424  :  2.76311502117954&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $500-$649 - 500  :  3.25839035516455&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $650-$799 - 352  :  2.29390681003584&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $1,000-$1,249 - 168  :  1.09481915933529&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $1,250-$1,499 - 129  :  0.840664711632454&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $1,500-$1,749 - 77  :  0.50179211469534&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $1,750-$1,999 - 36  :  0.234604105571848&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $2,000-$2,999 - 53  :  0.345389377647442&quot;
+## [1] &quot;Both Aboriginal and Torres Strait Islander - $3,000 or more - 7  :  0.0456174649723037&quot;</code></pre>
 </div>
 </div>
 

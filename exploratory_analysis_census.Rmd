@@ -25,9 +25,18 @@ sa2Data2011 <- importSA2Data("2011")
 
 # Import: SA2 Level by Indigenous Status, Sex, Age in 10 year blocks, and Weekly Personal Income (2011 Census)
 census2011 <- importCensusData("2011", "2011-Census-Analysis/data/2011_Census.csv", "D:/2011_Census.csv")
+census2011$Year <- "2011"
 
 # Import: Indigenous Status by SA2 Level for each state (2016 Census)
+sa2Data2016 <- importSA2Data("2016")
+
 # Import: SA2 Level by Indigenous Status, Sex, Age in 10 year blocks, and Weekly Personal Income (2016 Census)  
+census2016 <- importCensusData("2016", "2016-Census-Analysis/data/2016_Census.csv", "D:/2016_Census.csv")
+census2016$Year <- "2016"
+
+# Merge 2011 and 2016 data into one census dataset
+census <- rbind(census2011, census2016)
+census$Year <- as.factor(census$Year)
 
 ```
 
@@ -37,6 +46,8 @@ census2011 <- importCensusData("2011", "2011-Census-Analysis/data/2011_Census.cs
 
 dim(sa2Data2011) # data frame dimensions
 str(sa2Data2011) # structure of data
+head(sa2Data2011)
+
 summary(sa2Data2011)
 describe(sa2Data2011[c(2:7)], IQR=TRUE) # Summary statistics of population counts in each SA2 area
   
@@ -52,20 +63,232 @@ sum(count(sa2Data2011, 'State')$freq) # Number of SA2 areas in Australia for 201
 dim(census2011) # data frame dimensions
 str(census2011) # structure of data
 head(census2011, n=5) 
+
+unique(census2011$State) # Levels of State variables
+unique(census2011$Indigenous.Status) # Levels of Indigenous Status variable
+unique(census2011$Sex) # Levels of Sex variable
+unique(census2011$Age) # Levels of Age variable
+unique(census2011$Weekly.Personal.Income) # Levels of Weekly Personal Income variable
+
 summary(census2011)   # When transforming the data counts of zero were excluded
-  
 describe(census2011$Count, IQR=TRUE) 
   
 sum(census2011$Count) # Number of people counted in 2011 Census
 length(unique(census2011$SA2)) # Number of SA2 areas with population counts > 0
 length(unique(sa2Data2011$SA2)) - length(unique(census2011$SA2)) # Number of SA2 areas with no population recorded
 
-```
+# Number of people counted in each state during 2011 Census
+  total <- sum(census2011$Count)
+  for (state in unique(census2011$State))
+  {
+    count <- sum(census2011[which(census2011$State == state),]$Count)
+    percentage <- (count / total) * 100
+    print(paste(state, "-", count, " : ", percentage))
+  }
+  
+  # Number of people by indigenous status
+  for (status in unique(census2011$Indigenous.Status))
+  {
+    count <- sum(census2011[which(census2011$Indigenous.Status == status),]$Count)
+    percentage <- (count / total) * 100
+    print(paste(status, "-", count, " : ", percentage))
+  }
+  
+  # Number of people who are indigenous or not
+  for (indigenous in unique(census2011$Indigenous))
+  {
+    count <- sum(census2011[which(census2011$Indigenous == indigenous),]$Count)
+    percentage <- (count / total) * 100
+    print(paste(indigenous, "-", count, " : ", percentage))
+  }
+  
+  # Number of people per state by indigenous status
+  for (status in unique(census2011$Indigenous.Status))
+  {
+    for (state in unique(census2011$State))
+    {
+      stateTotal <- sum(census2011[which(census2011$State == state),]$Count)
+      count <- sum(census2011[which(census2011$Indigenous.Status == status & census2011$State == state),]$Count)
+      percentage <- (count / stateTotal) * 100
+      print(paste(status, "-", state, "-", count, " : ", percentage))
+    }
+  }
+  
+  # Number of people by sex
+  for (sex in unique(census2011$Sex))
+  {
+    count <- sum(census2011[which(census2011$Sex == sex),]$Count)
+    percentage <- (count / total) * 100
+    print(paste(sex, "-", count, " : ", percentage))
+  }
+  
+  # Number of people by age range
+  for (age in unique(census2011$Age))
+  {
+    count <- sum(census2011[which(census2011$Age == age),]$Count)
+    percentage <- (count / total) * 100
+    print(paste(age, "-", count, " : ", percentage))
+  }
+  
+  # Number of people per Indigenous Status by age range
+  for (status in unique(census2011$Indigenous.Status))
+  {
+    statusTotal <- sum(census2011[which(census2011$Indigenous.Status == status),]$Count)
+    for (age in unique(census2011$Age))
+    {
+      count <- sum(census2011[which(census2011$Indigenous.Status == status & census2011$Age == age),]$Count)
+      percentage <- (count / statusTotal) * 100
+      print(paste(status, "-", age, "-", count, " : ", percentage))
+    }
+  }
+  
+  # Number of people by Weekly Personal Income
+  for (income in unique(census2011$Weekly.Personal.Income))
+  {
+    count <- sum(census2011[which(census2011$Weekly.Personal.Income == income),]$Count)
+    percentage <- (count / total) * 100
+    print(paste(income, "-", count, " : ", percentage))
+  }
+  
+  # Number of people per Indigenous Status by Weekly Personal Income
+  for (status in unique(census2011$Indigenous.Status))
+  {
+    statusTotal <- sum(census2011[which(census2011$Indigenous.Status == status),]$Count)
+    for (income in unique(census2011$Weekly.Personal.Income))
+    {
+      count <- sum(census2011[which(census2011$Indigenous.Status == status & 
+                                  census2011$Weekly.Personal.Income == income),]$Count)
+      percentage <- (count / statusTotal) * 100
+      print(paste(status, "-", income, "-", count, " : ", percentage))
+    }
+  }
 
+```
 
 ### SA2 Level (2016 Census)
 
+```{r sa2_2016}
+
+dim(sa2Data2016) # data frame dimensions
+str(sa2Data2016) # structure of data
+head(sa2Data2016)
+
+summary(sa2Data2016)
+describe(sa2Data2011[c(2:7)], IQR=TRUE) # Summary statistics of population counts in each SA2 area
+  
+count(sa2Data2016, 'State') # Number of SA2 areas in each state
+sum(count(sa2Data2016, 'State')$freq) # Number of SA2 areas in Australia for 2016 Census
+
+```
+
 ### 2016 Census Data
 
+```{r census_2016}
+
+dim(census2016) # data frame dimensions
+str(census2016) # structure of data
+head(census2016, n=5) 
+
+unique(census2016$State) # Levels of State variable
+unique(census2016$Indigenous.Status) # Levels of Indigenous Status variable
+unique(census2016$Sex) # Levels of Sex variable
+unique(census2016$Age) # Levels of Age variable
+unique(census2016$Weekly.Personal.Income) # Levels of Weekly Personal Income variable
+
+summary(census2016)   # When transforming the data counts of zero were excluded
+describe(census2016$Count, IQR=TRUE) 
+  
+sum(census2016$Count) # Number of people counted in 2016 Census
+length(unique(census2016$SA2)) # Number of SA2 areas with population counts > 0
+length(unique(sa2Data2016$SA2)) - length(unique(census2011$SA2)) # Number of SA2 areas with no population recorded
+
+
+# Number of people counted in each state during 2016 Census
+total <- sum(census2016$Count)
+for (state in unique(census2016$State))
+{
+  count <- sum(census2016[which(census2016$State == state),]$Count)
+  percentage <- (count / total) * 100
+  print(paste(state, "-", count, " : ", percentage))
+}
+
+# Number of people by indigenous status
+for (status in unique(census2016$Indigenous.Status))
+{
+  count <- sum(census2016[which(census2016$Indigenous.Status == status),]$Count)
+  percentage <- (count / total) * 100
+  print(paste(status, "-", count, " : ", percentage))
+}
+
+# Number of people who are indigenous or not
+for (indigenous in unique(census2016$Indigenous))
+{
+  count <- sum(census2016[which(census2016$Indigenous == indigenous),]$Count)
+  percentage <- (count / total) * 100
+  print(paste(indigenous, "-", count, " : ", percentage))
+}
+
+# Number of people per state by indigenous status
+for (status in unique(census2016$Indigenous.Status))
+{
+  for (state in unique(census2016$State))
+  {
+    stateTotal <- sum(census2016[which(census2016$State == state),]$Count)
+    count <- sum(census2016[which(census2016$Indigenous.Status == status & census2016$State == state),]$Count)
+    percentage <- (count / stateTotal) * 100
+    print(paste(status, "-", state, "-", count, " : ", percentage))
+  }
+}
+
+# Number of people by sex
+for (sex in unique(census2016$Sex))
+{
+  count <- sum(census2016[which(census2016$Sex == sex),]$Count)
+  percentage <- (count / total) * 100
+  print(paste(sex, "-", count, " : ", percentage))
+}
+
+# Number of people by age range
+for (age in unique(census2016$Age))
+{
+  count <- sum(census2016[which(census2016$Age == age),]$Count)
+  percentage <- (count / total) * 100
+  print(paste(age, "-", count, " : ", percentage))
+}
+
+# Number of people per Indigenous Status by age range
+for (status in unique(census2016$Indigenous.Status))
+{
+  statusTotal <- sum(census2016[which(census2016$Indigenous.Status == status),]$Count)
+  for (age in unique(census2016$Age))
+  {
+    count <- sum(census2016[which(census2016$Indigenous.Status == status & census2016$Age == age),]$Count)
+    percentage <- (count / statusTotal) * 100
+    print(paste(status, "-", age, "-", count, " : ", percentage))
+  }
+}
+
+# Number of people by Weekly Personal Income
+for (income in unique(census2016$Weekly.Personal.Income))
+{
+  count <- sum(census2016[which(census2016$Weekly.Personal.Income == income),]$Count)
+  percentage <- (count / total) * 100
+  print(paste(income, "-", count, " : ", percentage))
+}
+
+# Number of people per Indigenous Status by Weekly Personal Income
+for (status in unique(census2016$Indigenous.Status))
+{
+  statusTotal <- sum(census2016[which(census2016$Indigenous.Status == status),]$Count)
+  for (income in unique(census2016$Weekly.Personal.Income))
+  {
+    count <- sum(census2016[which(census2016$Indigenous.Status == status & 
+                                    census2016$Weekly.Personal.Income == income),]$Count)
+    percentage <- (count / statusTotal) * 100
+    print(paste(status, "-", income, "-", count, " : ", percentage))
+  }
+}
+
+```
 
 
