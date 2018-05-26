@@ -134,23 +134,4 @@ for (status in unique(census$Indigenous.Status))
   }
 }
 
-# TODO: Dummy variables
-remote <- aggregate(. ~ SA2 + State, data = census[1:9], FUN = max)
-
 rm(state, status, age, income, sex, indigenous, count, percentage, stateTotal, statusTotal, total)
-
-# TODO: Plots
-
-plot(sa2Data$State, main="Number of SA2 Levels per State", ylab="SA2 Levels")
-
-boxplot(Count ~ Age, data = census)
-boxplot(Count ~ Weekly.Personal.Income, data = census)
-boxplot(Count ~ Indigenous, data = census)
-
-# TODO: Dummy Variables
-
-# TODO: Correlation
-# https://stats.stackexchange.com/questions/108007/correlations-with-unordered-categorical-variables
-# https://stats.stackexchange.com/questions/119835/correlation-between-a-nominal-iv-and-a-continuous-dv-variable/124618#124618
-
-
