@@ -88,6 +88,13 @@ rm(uniqueCensus2011, uniqueCensus2016, states, ages, incomes, census2011, census
 summary(census)   # When transforming the data counts of zero were excluded
 describe(census$Count, IQR=TRUE) 
 
+# Create data set containing only the Indigenous population
+censusIndigenous <- census[which(census$Indigenous == 1),]
+censusIndigenous$Indigenous <- NULL
+censusIndigenous$Indigenous.Status <- NULL
+summary(censusIndigenous)   # When transforming the data counts of zero were excluded
+describe(censusIndigenous$Count, IQR=TRUE) 
+
 ```
 
 ### SA2 Level (2011 Census)
@@ -286,6 +293,8 @@ boxplot(Count ~ Indigenous, data = census)
 
 # Correlation
 
+In this section the correlation between variables for the Indigenous population are examined.
+
 ```{r Correlation}
 
 # https://stats.stackexchange.com/questions/108007/correlations-with-unordered-categorical-variables
@@ -294,16 +303,16 @@ boxplot(Count ~ Indigenous, data = census)
 # Correlation for 2011 Census data only
   
   #library(corrgram)
-  #corrgram(census[which(census$Year == "2011"),], order=TRUE, lower.panel=panel.shade,
+  #corrgram(censusIndigenous[which(censusIndigenous$Year == "2011"),], order=TRUE, lower.panel=panel.shade,
   #         upper.panel=NULL, text.panel=panel.txt, cor.method = "spearman",
   #         main="Correlation of Numerical Variables")
   
-  #corrgram(census[which(census$Year == "2011"),], order=TRUE, lower.panel=panel.shade,
+  #corrgram(censusIndigenous[which(censusIndigenous$Year == "2011"),], order=TRUE, lower.panel=panel.shade,
   #         upper.panel=NULL, text.panel=panel.txt, cor.method = "pearson",
   #         main="Correlation of Numerical Variables")
   
-  nums <- sapply(census[which(census$Year == "2011"),], is.numeric)
-  numeric_data <- census[ , nums]
+  nums <- sapply(censusIndigenous[which(censusIndigenous$Year == "2011"),], is.numeric)
+  numeric_data <- censusIndigenous[ , nums]
 
   # calculate correlation matrix
   spearman <- cor(numeric_data, use="complete.obs", method="spearman") # can be used when outliers present
@@ -317,8 +326,8 @@ boxplot(Count ~ Indigenous, data = census)
 
 # Correlation for 2011 and 2016 Data
 
-  nums <- sapply(census, is.numeric)
-  numeric_data <- census[ , nums]
+  nums <- sapply(censusIndigenous, is.numeric)
+  numeric_data <- censusIndigenous[ , nums]
   
   # calculate correlation matrix
   spearman <- cor(numeric_data, use="complete.obs", method="spearman") # can be used when outliers present
@@ -334,21 +343,73 @@ boxplot(Count ~ Indigenous, data = census)
 
 # Normality Tests
 
+In this section the normality of count data for the Indigenous population is examined.
+
 ```{r Normality}
 
 # https://www.r-bloggers.com/normality-tests-for-continuous-data/
 # http://stat.ethz.ch/R-manual/R-devel/library/stats/html/shapiro.test.html
 
-```
+data <- censusIndigenous[which(censusIndigenous$Year == "2011"),]$Count
+sample <- sample(data, size = 5000)
+hist(sample)
 
+shapiro.test(sample) # Sample size must be between 3 and 5000
+
+library(nortest)
+# The A-D test is susceptible to extreme values, and may not give good results for very large data sets
+ad.test(data) # very low p-value indicates that the distribution is not normal
+
+qqnorm(data)
+qqline(data, col = "red")
+
+rm(data, sample)
+
+```
 
 # Regression
 
+Multiple linear regression is used to get a better understanding of which variables are important in estimating the number of indigenous population.
+
 ```{r Regression}
+
+# https://www.statmethods.net/stats/regression.html
+# https://data-flair.training/blogs/r-nonlinear-regression/
+
+census2011 <- censusIndigenous[which(censusIndigenous$Year == "2011"),]
+
+# Stepwise Regression
+library(MASS)
+fit <- lm(Count ~ ., data=census2011)
+step <- stepAIC(fit, direction="both")
+step$anova # display results
+
+
+# All Subsets Regression
+library(leaps)
+
+attach(census2011)
+leaps<-regsubsets(Count ~ .,data=census2011, nbest=10)
+detach(census2011)
+
+# view results 
+summary(leaps)
+
+# plot a table of models showing variables in each model.
+# models are ordered by the selection statistic.
+plot(leaps,scale="r2")
+
+# plot statistic by subset size 
+library(car)
+subsets(leaps, statistic="rsq")
 
 ```
 
 
 # Small Area Estimation
+
+```{r Estimation}
+
+```
 
 
