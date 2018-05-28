@@ -18,6 +18,8 @@ source("functions.R")
 
 ## Overview
 
+The following code imports data from the 2011 and 2016 Census of Housing and Population for Australia.
+
 ```{r import}
 
 # Import: Indigenous Status by SA2 Level for each state (2011 Census)
@@ -94,6 +96,26 @@ censusIndigenous$Indigenous <- NULL
 censusIndigenous$Indigenous.Status <- NULL
 summary(censusIndigenous)   # When transforming the data counts of zero were excluded
 describe(censusIndigenous$Count, IQR=TRUE) 
+
+# Indigenous population data (2011 only)
+censusIndigenous2011 <- censusIndigenous[which(censusIndigenous$Year == "2011"),] # 52391
+censusIndigenous2011$Year <- NULL
+censusIndigenous2011$SA2 <- NULL
+censusIndigenous2011$Male <- NULL
+
+attach(censusIndigenous2011)
+censusIndigenous2011 <- aggregate(Count ~ . , sum, data=censusIndigenous2011)
+detach(censusIndigenous2011)
+
+# Indigenous population data (2016 only)
+censusIndigenous2016 <- censusIndigenous[which(censusIndigenous$Year == "2016"),] # 
+censusIndigenous2016$Year <- NULL
+censusIndigenous2016$SA2 <- NULL
+censusIndigenous2016$Male <- NULL
+
+attach(censusIndigenous2016)
+censusIndigenous2016 <- aggregate(Count ~ . , sum, data=censusIndigenous2016)
+detach(censusIndigenous2016)
 
 ```
 
@@ -204,7 +226,7 @@ unique(census2016$State) # Levels of State variable
 unique(census2016$Indigenous.Status) # Levels of Indigenous Status variable
 unique(census2016$Sex) # Levels of Sex variable
 unique(census2016$Age) # Levels of Age variable
-unique(census2016$Weekly.Personal.Income) # Levels of Weekly Personal Income variable
+unique(census2016$Income) # Levels of Weekly Personal Income variable
 
 summary(census2016)   # When transforming the data counts of zero were excluded
 describe(census2016$Count, IQR=TRUE) 
@@ -253,40 +275,30 @@ options(scipen=0) # Enable scientific notation
 
 ```
 
-# Plots
+# Plots of Indigenous Data
 
 ```{r Plots}
 
 # TODO: 2011 Census Data
-census2011 <- census[which(census$Year == "2011"),]
 plot(sa2Data2011$State, main="Number of SA2 Levels per State", ylab="SA2 Levels")
-boxplot(Count ~ Age, data = census2011)
-boxplot(Count ~ Income, data = census2011)
-boxplot(Count ~ Indigenous, data = census2011)
-boxplot(Count ~ Indigenous.Status, data = census2011)
+boxplot(Count ~ Age, data = censusIndigenous2011)
+boxplot(Count ~ Income, data = censusIndigenous2011)
 
-pairs(~State+Age+Income+Indigenous.Status+Indigenous+Sex+Count, data=census2011, main="Simple Scatterplot Matrix")
+pairs(~Age+Income+Sex+Count, data=censusIndigenous2011, main="Simple Scatterplot Matrix")
 
 #library(lattice)
-#splom(census2011[c(2,10,11,12,13,14,15,17)], groups=census2011$Indigenous.Status, data=census2011,
+#splom(censusIndigenous2011[c(2,10,11,12,13,14,15,17)], groups=censusIndigenous2011$Indigenous.Status, data=censusIndigenous2011,
 #  	panel=panel.superpose)
 
-rm(census2011)
-
 # TODO: 2016 Census Data
-census2016 <- census[which(census$Year == "2016"),]
 plot(sa2Data2016$State, main="Number of SA2 Levels per State", ylab="SA2 Levels")
-boxplot(Count ~ Age, data = census2016)
-boxplot(Count ~ Income, data = census2016)
-boxplot(Count ~ Indigenous, data = census2016)
-boxplot(Count ~ Indigenous.Status, data = census2016)
-
-rm(census2016)
+boxplot(Count ~ Age, data = censusIndigenous2016)
+boxplot(Count ~ Income, data = censusIndigenous2016)
 
 # TODO: 2011 and 2016 Census Data
-boxplot(Count ~ Age, data = census)
-boxplot(Count ~ Income, data = census)
-boxplot(Count ~ Indigenous, data = census)
+#boxplot(Count ~ Age, data = census)
+#boxplot(Count ~ Income, data = census)
+#boxplot(Count ~ Indigenous, data = census)
 
 ```
 
@@ -303,16 +315,16 @@ In this section the correlation between variables for the Indigenous population 
 # Correlation for 2011 Census data only
   
   #library(corrgram)
-  #corrgram(censusIndigenous[which(censusIndigenous$Year == "2011"),], order=TRUE, lower.panel=panel.shade,
+  #corrgram(censusIndigenous2011, order=TRUE, lower.panel=panel.shade,
   #         upper.panel=NULL, text.panel=panel.txt, cor.method = "spearman",
   #         main="Correlation of Numerical Variables")
   
-  #corrgram(censusIndigenous[which(censusIndigenous$Year == "2011"),], order=TRUE, lower.panel=panel.shade,
+  #corrgram(censusIndigenous2011, order=TRUE, lower.panel=panel.shade,
   #         upper.panel=NULL, text.panel=panel.txt, cor.method = "pearson",
   #         main="Correlation of Numerical Variables")
   
-  nums <- sapply(censusIndigenous[which(censusIndigenous$Year == "2011"),], is.numeric)
-  numeric_data <- censusIndigenous[ , nums]
+  nums <- sapply(censusIndigenous2011, is.numeric)
+  numeric_data <- censusIndigenous2011[ , nums]
 
   # calculate correlation matrix
   spearman <- cor(numeric_data, use="complete.obs", method="spearman") # can be used when outliers present
@@ -322,20 +334,18 @@ In this section the correlation between variables for the Indigenous population 
   print(spearman)
   print(pearson)
   
-  rm(nums, numeric_data, spearman, pearson)
-
 # Correlation for 2011 and 2016 Data
 
-  nums <- sapply(censusIndigenous, is.numeric)
-  numeric_data <- censusIndigenous[ , nums]
+  #nums <- sapply(censusIndigenous, is.numeric)
+  #umeric_data <- censusIndigenous[ , nums]
   
   # calculate correlation matrix
-  spearman <- cor(numeric_data, use="complete.obs", method="spearman") # can be used when outliers present
-  pearson <- cor(numeric_data, use="complete.obs", method="pearson")  # assumes normality
+  #spearman <- cor(numeric_data, use="complete.obs", method="spearman") # can be used when outliers present
+  #pearson <- cor(numeric_data, use="complete.obs", method="pearson")  # assumes normality
   
   # summarise the correlation matrix
-  print(spearman)
-  print(pearson)
+  #print(spearman)
+  #print(pearson)
   
   rm(nums, numeric_data, spearman, pearson)
 
@@ -343,14 +353,14 @@ In this section the correlation between variables for the Indigenous population 
 
 # Normality Tests
 
-In this section the normality of count data for the Indigenous population is examined.
+In this section the normality of count data for the Indigenous population (2011) is examined.
 
 ```{r Normality}
 
 # https://www.r-bloggers.com/normality-tests-for-continuous-data/
 # http://stat.ethz.ch/R-manual/R-devel/library/stats/html/shapiro.test.html
 
-data <- censusIndigenous[which(censusIndigenous$Year == "2011"),]$Count
+data <- censusIndigenous2011$Count
 sample <- sample(data, size = 5000)
 hist(sample)
 
@@ -376,11 +386,10 @@ Multiple linear regression is used to get a better understanding of which variab
 # https://www.statmethods.net/stats/regression.html
 # https://data-flair.training/blogs/r-nonlinear-regression/
 
-census2011 <- censusIndigenous[which(censusIndigenous$Year == "2011"),]
-
 # Stepwise Regression
 library(MASS)
-fit <- lm(Count ~ ., data=census2011)
+fit <- lm(Count ~ State + Sex + Age + Income + City + InnerRegional + OuterRegional + Remote + VeryRemote + 
+            MigratoryOffshoreShipping + NoUsualAddress, data=censusIndigenous2011)
 step <- stepAIC(fit, direction="both")
 step$anova # display results
 
@@ -388,9 +397,10 @@ step$anova # display results
 # All Subsets Regression
 library(leaps)
 
-attach(census2011)
-leaps<-regsubsets(Count ~ .,data=census2011, nbest=10)
-detach(census2011)
+attach(censusIndigenous2011)
+leaps<-regsubsets(Count ~ State + Sex + Age + Income + City + InnerRegional + OuterRegional + Remote + VeryRemote + 
+            MigratoryOffshoreShipping + NoUsualAddress, data=censusIndigenous2011, nbest=10)#, really.big=T)
+detach(censusIndigenous2011)
 
 # view results 
 summary(leaps)
@@ -400,11 +410,12 @@ summary(leaps)
 plot(leaps,scale="r2")
 
 # plot statistic by subset size 
-library(car)
-subsets(leaps, statistic="rsq")
+#library(car)
+#subsets(leaps, statistic="rsq")
+
+rm(fit, step, leaps)
 
 ```
-
 
 # Small Area Estimation
 
