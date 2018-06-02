@@ -9,6 +9,7 @@ output: html_document
 library(psych)
 library(plyr)
 library(data.table)
+library(ggplot2)
 
 setwd("D:/Education/2015-2018 - Master of Data Science/2018-S1 - Data Science Professional Development 2/AustraliaKidneyDisease")
 
@@ -66,16 +67,41 @@ census2016$Income[census2016$Income == "$400-$499" | census2016$Income == "$500-
 census2016$Income[census2016$Income == "$1,500-$1,749" | census2016$Income == "$1,750-$1,999"] <- "$1,500-$1,999"
 census2016$Income[census2016$Income == "$2,000-$2,999" | census2016$Income == "$3,000 or more"] <- "$2,000 or more"
 
+census2011$Weekly.Personal.Income <- NULL   
+census2016$Weekly.Personal.Income <- NULL   
+
+# Aggregate rows that have been re-coded
+attach(census2011)
+census2011 <- aggregate(Count ~ . , sum, data=census2011)
+detach(census2011)
+
+attach(census2016)
+census2016 <- aggregate(Count ~ . , sum, data=census2016)
+detach(census2016)
+
+# State population variable
+state2011 <- aggregate(Count ~ State, sum, data=census2011)
+colnames(state2011)[2] <- "StatePopulation"
+census2011 <- merge(census2011, state2011, by="State")  # QLD 2016 4644165
+
+state2016 <- aggregate(Count ~ State, sum, data=census2016)
+colnames(state2016)[2] <- "StatePopulation"
+census2016 <- merge(census2016, state2016, by="State")
+
+# SA2 population variable
+sa22011 <- aggregate(Count ~ SA2, sum, data=census2011)
+colnames(sa22011)[2] <- "SA2Population"
+census2011 <- merge(census2011, sa22011, by="SA2")
+
+sa22016 <- aggregate(Count ~ SA2, sum, data=census2016)
+colnames(sa22016)[2] <- "SA2Population"
+census2016 <- merge(census2016, sa22016, by="SA2")
+
 # Merge 2011 and 2016 data into one census dataset
 census <- rbind(census2011, census2016)
 census$Year <- as.factor(census$Year)
 census$Income <- as.factor(census$Income)
-census$Weekly.Personal.Income <- NULL
-
-# Aggregate rows that have been re-coded
-attach(census)
-census <- aggregate(Count ~ . , sum, data=census)
-detach(census)
+#census$Weekly.Personal.Income <- NULL
 
 # Add dummy variables for State, Income, Sex and Age variables
 states <- as.data.frame(dummy.code(census$State))
@@ -85,7 +111,8 @@ census <- cbind(census, states, ages, incomes)
 census$Male <- as.numeric(census$Sex == "Male")
 #census$Over50Years <-
 
-rm(uniqueCensus2011, uniqueCensus2016, states, ages, incomes, census2011, census2016)
+rm(uniqueCensus2011, uniqueCensus2016, states, ages, incomes, 
+   census2011, census2016, sa22011, sa22016, state2011, state2016)
 
 summary(census)   # When transforming the data counts of zero were excluded
 describe(census$Count, IQR=TRUE) 
@@ -94,28 +121,22 @@ describe(census$Count, IQR=TRUE)
 censusIndigenous <- census[which(census$Indigenous == 1),]
 censusIndigenous$Indigenous <- NULL
 censusIndigenous$Indigenous.Status <- NULL
+attach(censusIndigenous)
+censusIndigenous <- aggregate(Count ~ . , sum, data=censusIndigenous)
+detach(censusIndigenous)
+
 summary(censusIndigenous)   # When transforming the data counts of zero were excluded
 describe(censusIndigenous$Count, IQR=TRUE) 
 
 # Indigenous population data (2011 only)
-censusIndigenous2011 <- censusIndigenous[which(censusIndigenous$Year == "2011"),] # 52391
+censusIndigenous2011 <- censusIndigenous[which(censusIndigenous$Year == "2011"),]
 censusIndigenous2011$Year <- NULL
-censusIndigenous2011$SA2 <- NULL
 censusIndigenous2011$Male <- NULL
 
-attach(censusIndigenous2011)
-censusIndigenous2011 <- aggregate(Count ~ . , sum, data=censusIndigenous2011)
-detach(censusIndigenous2011)
-
 # Indigenous population data (2016 only)
-censusIndigenous2016 <- censusIndigenous[which(censusIndigenous$Year == "2016"),] # 
+censusIndigenous2016 <- censusIndigenous[which(censusIndigenous$Year == "2016"),]
 censusIndigenous2016$Year <- NULL
-censusIndigenous2016$SA2 <- NULL
 censusIndigenous2016$Male <- NULL
-
-attach(censusIndigenous2016)
-censusIndigenous2016 <- aggregate(Count ~ . , sum, data=censusIndigenous2016)
-detach(censusIndigenous2016)
 
 ```
 
@@ -182,13 +203,13 @@ aggregate(Count ~ Age, FUN = customFunction, data=census2011)
 aggregate(Count ~ Income, FUN = customFunction, data=census2011)
 
 # Number of people per state by indigenous status
-aggregate(Count ~ Indigenous.Status + State, FUN = customFunction, data=census2011)
+aggregate(Count ~ Indigenous + State, FUN = customFunction, data=census2011)
 
 # Number of people per Indigenous Status by age range
-aggregate(Count ~ Indigenous.Status + Age, FUN = customFunction, data=census2011)
+aggregate(Count ~ Indigenous + Age, FUN = customFunction, data=census2011)
 
 # Number of people per Indigenous Status by Weekly Personal Income
-aggregate(Count ~ Indigenous.Status + Income, FUN = customFunction, data=census2011)
+aggregate(Count ~ Indigenous + Income, FUN = customFunction, data=census2011)
 
 detach(census2011)
 
@@ -260,13 +281,13 @@ aggregate(Count ~ Age, FUN = customFunction, data=census2016)
 aggregate(Count ~ Income, FUN = customFunction, data=census2016)
 
 # Number of people per state by indigenous status
-aggregate(Count ~ Indigenous.Status + State, FUN = customFunction, data=census2016)
+aggregate(Count ~ Indigenous + State, FUN = customFunction, data=census2016)
 
 # Number of people per Indigenous Status by age range
-aggregate(Count ~ Indigenous.Status + Age, FUN = customFunction, data=census2016)
+aggregate(Count ~ Indigenous + Age, FUN = customFunction, data=census2016)
 
 # Number of people per Indigenous Status by Weekly Personal Income
-aggregate(Count ~ Indigenous.Status + Income, FUN = customFunction, data=census2016)
+aggregate(Count ~ Indigenous + Income, FUN = customFunction, data=census2016)
 
 detach(census2016)
 
@@ -279,29 +300,110 @@ options(scipen=0) # Enable scientific notation
 
 ```{r Plots}
 
-# TODO: 2011 Census Data
+# 2011 Census Data
 plot(sa2Data2011$State, main="Number of SA2 Levels per State", ylab="SA2 Levels")
 boxplot(Count ~ Age, data = censusIndigenous2011)
 boxplot(Count ~ Income, data = censusIndigenous2011)
+pairs(~Age+Income+Sex+Count, data=censusIndigenous2011, main="Simple Scatterplot Matrix (2011)")
 
-pairs(~Age+Income+Sex+Count, data=censusIndigenous2011, main="Simple Scatterplot Matrix")
+# Histogram with number labels
+Histogram <- function(data, x, xaxislabel) {
+  total <- sum(data$Count)
+  attach(data)
+  x <- aggregate(Count ~ x , FUN = sum, data=data)
+  detach(data)
+  
+  ggplot(data=x, aes(x=x , y=Count)) + geom_bar(colour="black", stat="identity") + 
+  geom_text(aes(label=Count), vjust=2, color="white", fontface = "bold", size=4) + # vjust=1.6
+  labs(x=xaxislabel,y="Count") + theme_classic()
+}
+Histogram(censusIndigenous2011, Income, "Income")
+Histogram(censusIndigenous2011, State, "State")
+Histogram(censusIndigenous2011, Sex, "Sex")
+Histogram(censusIndigenous2011, Age, "Age")
 
-#library(lattice)
-#splom(censusIndigenous2011[c(2,10,11,12,13,14,15,17)], groups=censusIndigenous2011$Indigenous.Status, data=censusIndigenous2011,
-#  	panel=panel.superpose)
-
-# TODO: 2016 Census Data
+# 2016 Census Data
 plot(sa2Data2016$State, main="Number of SA2 Levels per State", ylab="SA2 Levels")
 boxplot(Count ~ Age, data = censusIndigenous2016)
 boxplot(Count ~ Income, data = censusIndigenous2016)
+pairs(~Age+Income+Sex+Count, data=censusIndigenous2016, main="Simple Scatterplot Matrix (2016)")
 
-# TODO: 2011 and 2016 Census Data
-#boxplot(Count ~ Age, data = census)
-#boxplot(Count ~ Income, data = census)
-#boxplot(Count ~ Indigenous, data = census)
+Histogram(censusIndigenous2016, Income, "Income")
+Histogram(censusIndigenous2016, State, "State")
+Histogram(censusIndigenous2016, Sex, "Sex")
+Histogram(censusIndigenous2016, Age, "Age")
+
+rm(Histogram)
 
 ```
 
+# Normality Tests
+
+In this section the normality of count data for the Indigenous population (2011) is examined.
+
+```{r Normality}
+
+# https://www.r-bloggers.com/normality-tests-for-continuous-data/
+# http://stat.ethz.ch/R-manual/R-devel/library/stats/html/shapiro.test.html
+
+data <- censusIndigenous2011$Count
+sample <- sample(data, size = 5000)
+hist(sample)
+shapiro.test(sample) # Sample size must be between 3 and 5000
+
+library(nortest)
+# The A-D test is susceptible to extreme values, and may not give good results for very large data sets
+ad.test(data) # very low p-value indicates that the distribution is not normal
+
+qqnorm(data)
+qqline(data, col = "red")
+
+rm(data, sample)
+
+
+```
+
+# Transformation
+
+For techniques such as correlation analysis and regression analysis a normal distribution is required. Because the population counts are not normal the data needs to be transformed.
+
+If distribution is right-skewed: sqrt(x); log(x); 1/sqrt(x); 1/x
+
+```{r Transformation}
+
+# Transformations: http://rcompanion.org/handbook/I_12.html
+
+library(MASS)
+Box = boxcox(censusIndigenous2011$Count ~ 1,              # Transform Turbidity as a single vector
+             lambda = seq(-6,6,0.1)      # Try values -6 to 6 by 0.1
+             )
+Cox = data.frame(Box$x, Box$y)            # Create a data frame with the results
+Cox2 = Cox[with(Cox, order(-Cox$Box.y)),] # Order the new data frame by decreasing y
+Cox2[1,]                                  # Display the lambda with the greatest
+                                          #    log likelihood
+lambda = Cox2[1, "Box.x"]                 # Extract that lambda
+censusIndigenous2011$TransformedCount = (censusIndigenous2011$Count ^ lambda - 1)/lambda #Transform the original data
+
+#censusIndigenous2011$TransformedCount <- log(censusIndigenous2011$Count)
+#censusIndigenous2011$TransformedCount <- sqrt(censusIndigenous2011$Count)
+#censusIndigenous2011$TransformedCount <- 1/sqrt(censusIndigenous2011$Count)
+#censusIndigenous2011$TransformedCount <- 1/censusIndigenous2011$Count
+#censusIndigenous2011$TransformedCount <- sign(censusIndigenous2011$Count) * abs(censusIndigenous2011$Count)^(1/3) 
+
+data <- censusIndigenous2011$TransformedCount
+sample <- sample(data, size = 5000)
+hist(sample)
+shapiro.test(sample) # Sample size must be between 3 and 5000
+
+# The A-D test is susceptible to extreme values, and may not give good results for very large data sets
+ad.test(censusIndigenous2011$TransformedCount) # very low p-value indicates that the distribution is not normal
+
+qqnorm(data)
+qqline(data, col = "red")
+
+rm(Cox, Cox2, Box, data, lambda, sample)
+
+```
 
 # Correlation
 
@@ -351,75 +453,140 @@ In this section the correlation between variables for the Indigenous population 
 
 ```
 
-# Normality Tests
-
-In this section the normality of count data for the Indigenous population (2011) is examined.
-
-```{r Normality}
-
-# https://www.r-bloggers.com/normality-tests-for-continuous-data/
-# http://stat.ethz.ch/R-manual/R-devel/library/stats/html/shapiro.test.html
-
-data <- censusIndigenous2011$Count
-sample <- sample(data, size = 5000)
-hist(sample)
-
-shapiro.test(sample) # Sample size must be between 3 and 5000
-
-library(nortest)
-# The A-D test is susceptible to extreme values, and may not give good results for very large data sets
-ad.test(data) # very low p-value indicates that the distribution is not normal
-
-qqnorm(data)
-qqline(data, col = "red")
-
-rm(data, sample)
-
-```
-
 # Regression
 
-Multiple linear regression is used to get a better understanding of which variables are important in estimating the number of indigenous population.
+Multiple linear regression is used to get a better understanding of which variables are important in estimating the number of indigenous people.
+
+Assumptions for multiple linear regression:
+* Error terms must be Normally distributed
+* Linearity: The relationship between y and x is linear
+* Independent errors: the residuals are independent
+** In particular, repeated observations on the same individual are not allowed
+* Normality: the residuals are Normally distributed for any given value of x - use a P-P or Q-Q Plot
+* Equal Variance (homoscedasticity): the residuals have constant variance around the 0 line
+
+These assumptions can be checked using plots. If assumptions have been violated, findings cannot be generalised beyond the sample.
+
+A good model has a large F-ratio and a small P-value
+
+In multiple regression, R2 is the square of the multiple correlation coefficient between the dependent variable and the predictors. The adjusted R2 indicates the loss of predictive power or shrinkage
+
+Binary logistic regression: Used to predict a binary (dichotomous) categorical response variable from one or more categorical and/or continuous explanatory variables
 
 ```{r Regression}
 
 # https://www.statmethods.net/stats/regression.html
 # https://data-flair.training/blogs/r-nonlinear-regression/
+# Regression for Count data: http://rcompanion.org/handbook/J_01.html
+# Survey package: https://cran.r-project.org/web/packages/survey/survey.pdf
 
 # Stepwise Regression
-library(MASS)
 fit <- lm(Count ~ State + Sex + Age + Income + City + InnerRegional + OuterRegional + Remote + VeryRemote + 
             MigratoryOffshoreShipping + NoUsualAddress, data=censusIndigenous2011)
 step <- stepAIC(fit, direction="both")
 step$anova # display results
 
+# TODO: Diagnostics
+library(car)
+Anova(step, type="II")
+  
+x = residuals(step)
+library(rcompanion)
+plotNormalHistogram(x)
+  
+qqnorm(residuals(step), ylab="Sample Quantiles for residuals")
+qqline(residuals(step), col="red")
+
+plot(fitted(step), residuals(step))
 
 # All Subsets Regression
-library(leaps)
+#library(leaps)
 
-attach(censusIndigenous2011)
-leaps<-regsubsets(Count ~ State + Sex + Age + Income + City + InnerRegional + OuterRegional + Remote + VeryRemote + 
-            MigratoryOffshoreShipping + NoUsualAddress, data=censusIndigenous2011, nbest=10)#, really.big=T)
-detach(censusIndigenous2011)
+#attach(censusIndigenous2011)
+#leaps<-regsubsets(Count ~ State + Sex + Age + Income + City + InnerRegional + OuterRegional + Remote + VeryRemote + 
+#            MigratoryOffshoreShipping + NoUsualAddress, data=censusIndigenous2011, nbest=10)#, really.big=T)
+#detach(censusIndigenous2011)
 
 # view results 
-summary(leaps)
+#summary(leaps)
 
 # plot a table of models showing variables in each model.
 # models are ordered by the selection statistic.
-plot(leaps,scale="r2")
+#plot(leaps,scale="r2")
 
 # plot statistic by subset size 
 #library(car)
 #subsets(leaps, statistic="rsq")
 
-rm(fit, step, leaps)
+# TODO: Apply to 2016 data
+
+rm(fit, step, leaps, x)
 
 ```
 
 # Small Area Estimation
 
+In this section some simple small area estimation models are trained to try and estimate the number of Indigenous people in different SA2 areas. This is improve knowledge in how to train and evaluate the models. More advanced models will be created to estimate the number of Indigenous people with kidney disease using the health survey data.
+
 ```{r Estimation}
+
+library(sae) # small area estimation
+library(rsae) # robust small area estimation
+
+attach(censusIndigenous2011)
+Xs <- cbind(City, InnerRegional, OuterRegional, Remote, VeryRemote) # Construct design matrix for sample elements
+domains <- as.numeric(unique(State))
+detach(censusIndigenous2011)
+
+attach(censusIndigenous2016)
+Xoutsamp <- cbind(as.numeric(State), City, InnerRegional, OuterRegional, Remote, VeryRemote) 
+#Xoutsamp <- Xoutsamp[SA2 %in% domains,]
+detach(censusIndigenous2016)
+
+#attach(censusIndigenous2011)
+#result <- ebBHF(Count ~ Xs, dom=State, Xnonsample=Xoutsamp, 
+#                MC=10, constant=3600, indicator=function(y) {y})
+#detach(censusIndigenous2011)
+
+# EXAMPLE
+
+  data(incomedata) # Load data set
+  attach(incomedata)
+  
+  # Construct design matrix for sample elements
+  Xs <- cbind(age2, age3, age4, age5, nat1, educ1, educ3, labor1, labor2)
+  
+  # Select the domains to compute EB estimators.
+  data(Xoutsamp)
+  
+  domains <- unique(Xoutsamp[,"domain"])
+  
+  # Poverty gap indicator
+  povertyline <- 0.6*median(income)
+  povertyline # 6477.484
+  povgap <- function(y)
+  {
+  z <- 6477.484
+  result <- mean((y<z) * (z-y) / z)
+  return (result)
+  }
+  
+  # Compute EB predictors of poverty gap. The value constant=3600 is selected
+  # to achieve approximately symmetric residuals.
+  set.seed(123)
+  result <- ebBHF(income ~ Xs, dom=prov, selectdom=domains,
+  Xnonsample=Xoutsamp, MC=10, constant=3600, indicator=povgap)
+  result$eb
+  result$fit$summary
+  result$fit$fixed
+  result$fit$random[,1]
+  result$fit$errorvar
+  result$fit$refvar
+  result$fit$loglike
+  result$fit$residuals[1:10]
+  detach(incomedata)
+  
+  rm(domains, povertyline, result, Xs, Xoutsamp, incomedata, povgap)
 
 ```
 
