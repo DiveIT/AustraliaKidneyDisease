@@ -1,81 +1,81 @@
-State or Territory,ASGS 2011,Sex,Not reported,Kidney Disease,No Kidney Disease
-Victoria,Major Urban,Male,0.1,0,8.9
-Victoria,Other Urban,Male,0,0,10.2
-Victoria,Bounded Locality,Male,0,0,0.4
-Victoria,Rural Balance,Male,0,0,1.7
-Victoria,Total,Male,0.2,0,21.5
-Queensland,Major Urban,Male,0,0.5,40
-Queensland,Other Urban,Male,0.7,1.1,28.7
-Queensland,Bounded Locality,Male,0.1,0.8,8.9
-Queensland,Rural Balance,Male,0,0,3.7
-Queensland,Total,Male,0.9,3.1,80.8
-New South Wales,Major Urban,Male,0,1.2,35
-New South Wales,Other Urban,Male,0.5,1.5,46.3
-New South Wales,Bounded Locality,Male,0,0.2,3.1
-New South Wales,Rural Balance,Male,0,0.1,7.6
-New South Wales,Total,Male,0.8,3.1,91.1
-South Australia,Major Urban,Male,0.1,0.2,7.7
-South Australia,Other Urban,Male,0.1,0.1,6
-South Australia,Bounded Locality,Male,0,0.1,0.9
-South Australia,Rural Balance,Male,0,0.1,1.3
-South Australia,Total,Male,0.2,0.5,15.9
-Western Australia,Major Urban,Male,0,0.2,14.6
-Western Australia,Other Urban,Male,0,0.4,14
-Western Australia,Bounded Locality,Male,0.2,0.4,5.6
-Western Australia,Rural Balance,Male,0,0.4,2.4
-Western Australia,Total,Male,0.2,2,36.2
-Tasmania,Major Urban,Male,0,0,3.2
-Tasmania,Other Urban,Male,0.3,0.1,3.6
-Tasmania,Bounded Locality,Male,0.1,0,1.1
-Tasmania,Rural Balance,Male,0.2,0,2.6
-Tasmania,Total,Male,0.4,0.2,10.6
-Northern Territory,Major Urban,Male,0.1,0.1,4.5
-Northern Territory,Other Urban,Male,0.1,1,6.5
-Northern Territory,Bounded Locality,Male,0.2,2.2,12.9
-Northern Territory,Rural Balance,Male,0,0,2.8
-Northern Territory,Total,Male,0.5,3.6,27
-Australian Capital Territory,Major Urban,Male,0,0,2.9
-Australian Capital Territory,Other Urban,Male,0,0,0
-Australian Capital Territory,Bounded Locality,Male,0,0,0
-Australian Capital Territory,Rural Balance,Male,0,0,0
-Australian Capital Territory,Total,Male,0,0,2.9
-Victoria,Major Urban,Female,0,0.2,8.9
-Victoria,Other Urban,Female,0.1,0.1,10.1
-Victoria,Bounded Locality,Female,0,0,0.3
-Victoria,Rural Balance,Female,0,0,2.1
-Victoria,Total,Female,0.1,0.3,21.2
-Queensland,Major Urban,Female,1.3,1,39
-Queensland,Other Urban,Female,0.4,1.1,27.8
-Queensland,Bounded Locality,Female,0.1,0.9,9.1
-Queensland,Rural Balance,Female,0,0.3,4.6
-Queensland,Total,Female,1.9,3.1,80.7
-New South Wales,Major Urban,Female,0.6,0.7,38
-New South Wales,Other Urban,Female,0.6,0.9,45.3
-New South Wales,Bounded Locality,Female,0.1,0.2,3
-New South Wales,Rural Balance,Female,0.2,0,5.8
-New South Wales,Total,Female,1.8,2,92.2
-South Australia,Major Urban,Female,0.1,0.1,8.5
-South Australia,Other Urban,Female,0,0.2,5.3
-South Australia,Bounded Locality,Female,0,0.1,1.5
-South Australia,Rural Balance,Female,0,0,1.1
-South Australia,Total,Female,0.1,0.5,16.4
-Western Australia,Major Urban,Female,0.1,0.1,14.2
-Western Australia,Other Urban,Female,0.3,0.9,13.8
-Western Australia,Bounded Locality,Female,0.1,0.6,5.7
-Western Australia,Rural Balance,Female,0.2,0.5,2.5
-Western Australia,Total,Female,0.7,2.4,36.2
-Tasmania,Major Urban,Female,0.1,0,3.4
-Tasmania,Other Urban,Female,0.1,0,3.5
-Tasmania,Bounded Locality,Female,0,0,1.1
-Tasmania,Rural Balance,Female,0,0.1,2.7
-Tasmania,Total,Female,0.2,0.3,10.8
-Northern Territory,Major Urban,Female,0.2,0.1,5.1
-Northern Territory,Other Urban,Female,0.1,1.1,7.4
-Northern Territory,Bounded Locality,Female,0.5,2.2,11.4
-Northern Territory,Rural Balance,Female,0,0,2.6
-Northern Territory,Total,Female,0.8,3.6,26.6
-Australian Capital Territory,Major Urban,Female,0.2,0,2.5
-Australian Capital Territory,Other Urban,Female,0,0,0
-Australian Capital Territory,Bounded Locality,Female,0,0,0
-Australian Capital Territory,Rural Balance,Female,0,0,0
-Australian Capital Territory,Total,Female,0.2,0,2.5
+Remoteness,State,Sex,Not.Reported,Kidney.Disease,No.Kidney.Disease
+Major Cities of Australia,New South Wales,Male,0,2.1,40.2
+Major Cities of Australia,New South Wales,Female,0.6,0.7,42.5
+Major Cities of Australia,Victoria,Male,0.2,0,10.8
+Major Cities of Australia,Victoria,Female,0,0.2,10.6
+Major Cities of Australia,Queensland,Male,0.3,0.4,26.4
+Major Cities of Australia,Queensland,Female,0.6,0.5,24.7
+Major Cities of Australia,South Australia,Male,0.1,0.2,7.7
+Major Cities of Australia,South Australia,Female,0.1,0.1,8.5
+Major Cities of Australia,Western Australia,Male,0,0.2,14.8
+Major Cities of Australia,Western Australia,Female,0.1,0.1,14.4
+Major Cities of Australia,Tasmania,Male,0,0,0
+Major Cities of Australia,Tasmania,Female,0,0,0
+Major Cities of Australia,Northern Territory,Male,0,0,0
+Major Cities of Australia,Northern Territory,Female,0,0,0
+Major Cities of Australia,Australian Capital Territory,Male,0,0,2.9
+Major Cities of Australia,Australian Capital Territory,Female,0.2,0,2.5
+Inner Regional Australia,New South Wales,Male,0,0.7,31.4
+Inner Regional Australia,New South Wales,Female,0.2,0.5,30.7
+Inner Regional Australia,Victoria,Male,0,0,7.2
+Inner Regional Australia,Victoria,Female,0.1,0.1,7.5
+Inner Regional Australia,Queensland,Male,0.4,0.3,15.4
+Inner Regional Australia,Queensland,Female,0.2,0.2,16.9
+Inner Regional Australia,South Australia,Male,0,0,1.3
+Inner Regional Australia,South Australia,Female,0,0,1.4
+Inner Regional Australia,Western Australia,Male,0,0,2.9
+Inner Regional Australia,Western Australia,Female,0,0,2.5
+Inner Regional Australia,Tasmania,Male,0,0.1,5.8
+Inner Regional Australia,Tasmania,Female,0.1,0.2,5.9
+Inner Regional Australia,Northern Territory,Male,0,0,0
+Inner Regional Australia,Northern Territory,Female,0,0,0
+Inner Regional Australia,Australian Capital Territory,Male,0,0,0
+Inner Regional Australia,Australian Capital Territory,Female,0,0,0
+Outer Regional Australia,New South Wales,Male,0,0.5,16.6
+Outer Regional Australia,New South Wales,Female,0.6,0,15.9
+Outer Regional Australia,Victoria,Male,0,0,3.2
+Outer Regional Australia,Victoria,Female,0,0,3.3
+Outer Regional Australia,Queensland,Male,0,0.5,24.2
+Outer Regional Australia,Queensland,Female,0.5,0.4,24.9
+Outer Regional Australia,South Australia,Male,0.1,0,4.1
+Outer Regional Australia,South Australia,Female,0,0.1,3.6
+Outer Regional Australia,Western Australia,Male,0,0.1,5.3
+Outer Regional Australia,Western Australia,Female,0.1,0.1,5.4
+Outer Regional Australia,Tasmania,Male,0.4,0.1,4.5
+Outer Regional Australia,Tasmania,Female,0.1,0.1,4.7
+Outer Regional Australia,Northern Territory,Male,0.1,0.1,5.2
+Outer Regional Australia,Tasmania,Female,0.2,0.1,6.3
+Outer Regional Australia,Australian Capital Territory,Male,0,0,0
+Outer Regional Australia,Australian Capital Territory,Female,0,0,0
+Remote Australia,New South Wales,Male,0.1,0.1,2.2
+Remote Australia,New South Wales,Female,0.3,0.2,2.4
+Remote Australia,Victoria,Male,0,0,0
+Remote Australia,Victoria,Female,0,0,0
+Remote Australia,Queensland,Male,0.2,0.5,5.9
+Remote Australia,Queensland,Female,0.1,0.5,4.9
+Remote Australia,South Australia,Male,0,0,0.6
+Remote Australia,South Australia,Female,0,0,0.5
+Remote Australia,Western Australia,Male,0,0.1,6
+Remote Australia,Western Australia,Female,0.1,0.5,6.4
+Remote Australia,Tasmania,Male,0,0,0.3
+Remote Australia,Tasmania,Female,0,0,0.4
+Remote Australia,Northern Territory,Male,0.1,0.8,5.1
+Remote Australia,Northern Territory,Female,0.2,0.6,5.4
+Remote Australia,Australian Capital Territory,Male,0,0,0
+Remote Australia,Australian Capital Territory,Female,0,0,0
+Very Remote Australia,New South Wales,Male,0,0.3,1.2
+Very Remote Australia,New South Wales,Female,0.1,0.2,1.4
+Very Remote Australia,Victoria,Male,0,0,0
+Very Remote Australia,Victoria,Female,0,0,0
+Very Remote Australia,Queensland,Male,0.1,1.4,8.4
+Very Remote Australia,Queensland,Female,0.2,1.5,9.1
+Very Remote Australia,South Australia,Male,0,0.2,1.8
+Very Remote Australia,South Australia,Female,0,0.2,2.3
+Very Remote Australia,Western Australia,Male,0.1,1.1,7.7
+Very Remote Australia,Western Australia,Female,0.3,1.4,7.4
+Very Remote Australia,Tasmania,Male,0,0,0
+Very Remote Australia,Tasmania,Female,0,0,0
+Very Remote Australia,Northern Territory,Male,0.3,2.6,16.8
+Very Remote Australia,Northern Territory,Female,0.3,3,14.7
+Very Remote Australia,Australian Capital Territory,Male,0,0,0
+Very Remote Australia,Australian Capital Territory,Female,0,0,0
