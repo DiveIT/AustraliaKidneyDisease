@@ -130,12 +130,6 @@ attach(censusIndigenous)
 censusIndigenous <- aggregate(Count ~ . , sum, data=censusIndigenous)
 detach(censusIndigenous)
 
-# Re-order Age factor levels
-#censusIndigenous$Age = factor(censusIndigenous$Age,levels(censusIndigenous$Age)[c(1,2,4:11,3)])
-
-# Re-order Income factor levels
-#censusIndigenous$Income = factor(censusIndigenous$Income,levels(censusIndigenous$Income)[c(11,12,9,10,1,6,7,8,2:5)])
-
 summary(censusIndigenous)   # When transforming the data counts of zero were excluded
 describe(censusIndigenous$Count, IQR=TRUE) 
 
@@ -148,6 +142,8 @@ censusIndigenous2011$Male <- NULL
 censusIndigenous2016 <- censusIndigenous[which(censusIndigenous$Year == "2016"),]
 censusIndigenous2016$Year <- NULL
 censusIndigenous2016$Male <- NULL
+
+rm(importCensusData, importSA2byState, importSA2Data)
 
 ```
 
@@ -189,6 +185,10 @@ sum(census2011$Count) # Number of people counted in 2011 Census
 length(unique(census2011$SA2)) # Number of SA2 areas with population counts > 0
 length(unique(sa2Data2011$SA2)) - length(unique(census2011$SA2)) # Number of SA2 areas with no population recorded
 
+sum(census2011$Remote != census2011$VeryRemote) # Remote and Very Remote not equal
+unique(census2011[c("City", "InnerRegional", "OuterRegional", "Remote", "VeryRemote", 
+                    "MigratoryOffshoreShipping", "NoUsualAddress")])
+
 options(scipen=999) # Disable scientific notation
 total <- sum(census2011$Count)
 customFunction <- function(x) c(sum = sum(x), percent = (sum(x)/total)*100)
@@ -204,6 +204,10 @@ describe(x$Count, IQR=TRUE)
 
 x <- aggregate(Count ~ SA2 , FUN = sum, data=census2011[Indigenous==0,]) # Non-Indigenous
 describe(x$Count, IQR=TRUE)
+
+# Number of people by remotness area
+aggregate(Count~ City + InnerRegional + OuterRegional + Remote + VeryRemote + 
+            MigratoryOffshoreShipping + NoUsualAddress, FUN = customFunction, data=census2011)
 
 # Number of people counted in each state during 2011 Census
 aggregate(Count ~ State , FUN = customFunction, data=census2011)
@@ -239,9 +243,25 @@ aggregate(Count ~ Indigenous + Sex, FUN = customFunction, data=census2011)
 total <- sum(census2011[Indigenous == 1,]$Count)
 aggregate(Count ~ State , FUN = customFunction, data=census2011[Indigenous == 1,])
 
+# Number of Indigenous people by age range
+aggregate(Count ~ Age , FUN = customFunction, data=census2011[Indigenous == 1,])
+
+# Number of Indigenous people by income
+aggregate(Count ~ Income , FUN = customFunction, data=census2011[Indigenous == 1,])
+
+# Number of Indigenous people by remotness area
+aggregate(Count ~ City + InnerRegional + OuterRegional + Remote + VeryRemote + 
+            MigratoryOffshoreShipping + NoUsualAddress, FUN = customFunction, data=census2011[Indigenous == 1,])
+
 # Number of Non-Indigenous people by state
 total <- sum(census2011[Indigenous == 0,]$Count)
 aggregate(Count ~ State , FUN = customFunction, data=census2011[Indigenous == 0,])
+
+# Number of Non-Indigenous people by age range
+aggregate(Count ~ Age , FUN = customFunction, data=census2011[Indigenous == 0,])
+
+# Number of Non-Indigenous people by income
+aggregate(Count ~ Income , FUN = customFunction, data=census2011[Indigenous == 0,])
 
 # Statistical Summary of Indigenous population count
 describe(census2011[Indigenous == 1,]$Count, IQR=TRUE)
@@ -294,6 +314,10 @@ sum(census2016$Count) # Number of people counted in 2016 Census
 length(unique(census2016$SA2)) # Number of SA2 areas with population counts > 0
 length(unique(sa2Data2016$SA2)) - length(unique(census2016$SA2)) # Number of SA2 areas with no population recorded
 
+sum(census2016$Remote != census2016$VeryRemote) # Remote and Very Remote not equal
+unique(census2016[c("City", "InnerRegional", "OuterRegional", "Remote", "VeryRemote", 
+                    "MigratoryOffshoreShipping", "NoUsualAddress")])
+
 options(scipen=999) # Disable scientific notation
 total <- sum(census2016$Count)
 customFunction <- function(x) c(sum = sum(x), percent = (sum(x)/total)*100)
@@ -309,6 +333,10 @@ describe(x$Count, IQR=TRUE)
 
 x <- aggregate(Count ~ SA2 , FUN = sum, data=census2016[Indigenous==0,]) # Non-Indigenous
 describe(x$Count, IQR=TRUE)
+
+# Number of people by remotness area
+aggregate(Count~ City + InnerRegional + OuterRegional + Remote + VeryRemote + 
+            MigratoryOffshoreShipping + NoUsualAddress, FUN = customFunction, data=census2016)
 
 # Number of people counted in each state during 2011 Census
 aggregate(Count ~ State , FUN = customFunction, data=census2016)
@@ -346,6 +374,10 @@ aggregate(Count ~ Age , FUN = customFunction, data=census2016[Indigenous == 1,])
 
 # Number of Indigenous people by income
 aggregate(Count ~ Income , FUN = customFunction, data=census2016[Indigenous == 1,])
+
+# Number of Indigenous people by remotness area
+aggregate(Count ~ City + InnerRegional + OuterRegional + Remote + VeryRemote + 
+            MigratoryOffshoreShipping + NoUsualAddress, FUN = customFunction, data=census2016[Indigenous == 1,])
 
 # Number of Non-Indigenous people by state
 total <- sum(census2016[Indigenous == 0,]$Count)
@@ -445,8 +477,6 @@ HistogramPercent(censusNonIndigenous2016, Income, "Weekly Personal Income", c(0,
 HistogramPercent(censusNonIndigenous2016, State, "State")
 HistogramPercent(censusNonIndigenous2016, Sex, "Sex", c(0, 60))
 HistogramPercent(censusNonIndigenous2016, Age, "Age", c(0,30))
-
-# TODO: 2016 Census Data - Remoteness Area Plots
 
 rm(Histogram, HistogramPercent)
 
@@ -595,49 +625,51 @@ Binary logistic regression: Used to predict a binary (dichotomous) categorical r
 # Regression for Count data: http://rcompanion.org/handbook/J_01.html
 # Survey package: https://cran.r-project.org/web/packages/survey/survey.pdf
 
-# Stepwise Regression
-fit <- lm(Count ~ State + Sex + Age + Income + City + InnerRegional + OuterRegional + Remote + VeryRemote + 
-            MigratoryOffshoreShipping + NoUsualAddress, data=censusIndigenous2011)
-step <- stepAIC(fit, direction="both")
+library(car)
+library(multcompView)
+library(lsmeans)
+library(rcompanion)
+library(boot)
+
+# Regression for count data (generalised linear regression)
+# Generalised linear models are used when the dependent variable is count, binary, multinomial, etc.
+# Did not include "No Usual Address" and "MigratoryOffshoreShipping" due to zero or low population counts
+# Did not include "Sex" as split between male and female is ~50%
+glmFit <- glm(Count ~ State + Age + Income + City + InnerRegional + OuterRegional + Remote + VeryRemote, 
+              data = censusIndigenous2011)
+glmFit$family # The family object used
+
+step <- stepAIC(glmFit, direction="both")
 step$anova # display results
 
-# TODO: Diagnostics
-library(car)
-Anova(step, type="II")
-  
-x = residuals(step)
-library(rcompanion)
+# Diagnostics
+anova(glmFit)
+summary(glmFit)
+Anova(glmFit, type="II", test="LR")
+
+fitDiag <- glm.diag(glmFit)
+glm.diag.plots(glmFit, fitDiag)
+
+x = residuals(glmFit)
 plotNormalHistogram(x)
   
-qqnorm(residuals(step), ylab="Sample Quantiles for residuals")
-qqline(residuals(step), col="red")
+qqnorm(residuals(glmFit), ylab="Sample Quantiles for residuals")
+qqline(residuals(glmFit), col="red")
 
-plot(fitted(step), residuals(step))
-
-# All Subsets Regression
-#library(leaps)
-
-#attach(censusIndigenous2011)
-#leaps<-regsubsets(Count ~ State + Sex + Age + Income + City + InnerRegional + OuterRegional + Remote + VeryRemote + 
-#            MigratoryOffshoreShipping + NoUsualAddress, data=censusIndigenous2011, nbest=10)#, really.big=T)
-#detach(censusIndigenous2011)
-
-# view results 
-#summary(leaps)
-
-# plot a table of models showing variables in each model.
-# models are ordered by the selection statistic.
-#plot(leaps,scale="r2")
-
-# plot statistic by subset size 
-#library(car)
-#subsets(leaps, statistic="rsq")
+plot(fitted(glmFit), residuals(glmFit))
 
 # TODO: Apply to 2016 data
 
 rm(fit, step, leaps, x)
 
 ```
+
+```{r Regression-Kidney}
+
+# TODO: Generalised linear model to predict kidney disease in Indigenous population
+
+```
+
 
 # Small Area Estimation
 
