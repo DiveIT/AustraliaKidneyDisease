@@ -1,0 +1,142 @@
+---
+title: "Small Area Estimation"
+author: "Katherine Noack"
+date: "9 June 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(car)
+library(multcompView)
+library(lsmeans)
+library(rcompanion)
+library(boot)
+library(MASS)
+
+# Import Census data
+load("./Processed-Data/CensusData.RData")
+
+# Import health survey data
+load("./Survey-Data/SurveyData.RData")
+
+survey_incm <- survey_incm %>% 
+  mutate(strata=0)
+survey_incm$strata[survey_incm$incm =="$1-$299"] <- 1
+survey_incm$strata[survey_incm$incm =="$300-$399"] <- 2
+survey_incm$strata[survey_incm$incm =="$400-$799"] <- 3
+survey_incm$strata[survey_incm$incm =="$800-$999"] <- 4
+survey_incm$strata[survey_incm$incm =="$1,000-$1,249"] <- 5
+survey_incm$strata[survey_incm$incm =="$1,250-$1,499"] <- 6
+survey_incm$strata[survey_incm$incm =="$1,500-$1,999"] <- 7
+survey_incm$strata[survey_incm$incm =="$2,000 or more"] <- 8
+
+```
+
+# Generalised Linear Model
+
+```{r Linear-Kidney}
+
+# https://www.statmethods.net/stats/regression.html
+# Regression for Count data: http://rcompanion.org/handbook/J_01.html
+# Survey package: https://cran.r-project.org/web/packages/survey/survey.pdf
+
+# Generalised linear model to predict kidney disease in Indigenous population
+#   Regression for count data (generalised linear regression)
+#   Generalised linear models are used when the dependent variable is count, binary, multinomial, etc.
+glmFit <- glm(Kidney.Disease ~ Age + Sex + Total, data = survey_age)
+glmFit$family # The family object used
+
+step <- stepAIC(glmFit, direction="both")
+step$anova # display results
+
+# Diagnostics
+anova(step)
+summary(step)
+Anova(step, type="II", test="LR")
+
+fitDiag <- glm.diag(step)
+glm.diag.plots(step, fitDiag)
+
+x = residuals(step)
+plotNormalHistogram(x)
+  
+qqnorm(residuals(step), ylab="Sample Quantiles for residuals")
+qqline(residuals(step), col="red")
+
+plot(fitted(step), residuals(step))
+
+# TODO: Apply to 2011 Indigenous Census data
+
+
+```
+
+
+# Small Area Estimation
+
+In this section some simple small area estimation models are trained to try and estimate the number of Indigenous people in different SA2 areas. This is improve knowledge in how to train and evaluate the models. More advanced models will be created to estimate the number of Indigenous people with kidney disease using the health survey data.
+
+```{r Estimation}
+
+library(sae) # small area estimation
+library(rsae) # robust small area estimation
+
+attach(censusIndigenous2011)
+Xs <- cbind(City, InnerRegional, OuterRegional, Remote, VeryRemote) # Construct design matrix for sample elements
+domains <- as.numeric(unique(State))
+detach(censusIndigenous2011)
+
+attach(censusIndigenous2016)
+Xoutsamp <- cbind(as.numeric(State), City, InnerRegional, OuterRegional, Remote, VeryRemote) 
+#Xoutsamp <- Xoutsamp[SA2 %in% domains,]
+detach(censusIndigenous2016)
+
+#attach(censusIndigenous2011)
+#result <- ebBHF(Count ~ Xs, dom=State, Xnonsample=Xoutsamp, 
+#                MC=10, constant=3600, indicator=function(y) {y})
+#detach(censusIndigenous2011)
+
+# EXAMPLE
+
+  data(incomedata) # Load data set
+  attach(incomedata)
+  
+  # Construct design matrix for sample elements
+  Xs <- cbind(age2, age3, age4, age5, nat1, educ1, educ3, labor1, labor2)
+  
+  # Select the domains to compute EB estimators.
+  data(Xoutsamp)
+  
+  domains <- unique(Xoutsamp[,"domain"])
+  
+  # Poverty gap indicator
+  povertyline <- 0.6*median(income)
+  povertyline # 6477.484
+  povgap <- function(y)
+  {
+  z <- 6477.484
+  result <- mean((y<z) * (z-y) / z)
+  return (result)
+  }
+  
+  # Compute EB predictors of poverty gap. The value constant=3600 is selected
+  # to achieve approximately symmetric residuals.
+  set.seed(123)
+  result <- ebBHF(income ~ Xs, dom=prov, selectdom=domains,
+  Xnonsample=Xoutsamp, MC=10, constant=3600, indicator=povgap)
+  result$eb
+  result$fit$summary
+  result$fit$fixed
+  result$fit$random[,1]
+  result$fit$errorvar
+  result$fit$refvar
+  result$fit$loglike
+  result$fit$residuals[1:10]
+  detach(incomedata)
+  
+  rm(domains, povertyline, result, Xs, Xoutsamp, incomedata, povgap)
+
+```
+
