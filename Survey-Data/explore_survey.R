@@ -27,11 +27,28 @@ set_wd()
 survey_age <- read.csv("./data/KidneyAge.csv")
 survey_geo <- read.csv("./data/KidneyStateRemoteness.csv")
 survey_incm <- read.csv("./data/KidneyIncome.csv")
+survey_health <- read.csv("./data/comorbidity.csv")
 # Australian Health Survey
 all_survey_incm <- read.csv("./data/AllKidneyIncome.csv")
 all_survey_geo <- read.csv("./data/AllKidneyStateRemoteness.csv")
 
 # Transform data ----
+#Age into deciles
+survey_age <- survey_age %>% 
+  mutate(ppn = Kidney.Disease/Total)
+survey_age$Age <- as.character(survey_age$Age)
+survey_age$Age[survey_age$Age %in% c("1","2","3","4","5","6","7","8","9")] <- "0-9 years"
+survey_age$Age[survey_age$Age %in% c("10","11","12","13","14","15","16","17","18","19")] <- "10-19 years"
+survey_age$Age[survey_age$Age %in% c("20","21","22","23","24","25","26","27","28","29")] <- "20-29 years"
+survey_age$Age[survey_age$Age %in% c("30","31","32","33","34","35","36","37","38","39")] <- "30-39 years"
+survey_age$Age[survey_age$Age %in% c("30","31","32","33","34","35","36","37","38","39")] <- "30-39 years"
+survey_age$Age[survey_age$Age %in% c("40","41","42","43","44","45","46","47","48","49")] <- "40-49 years"
+survey_age$Age[survey_age$Age %in% c("50","51","52","53","54","55","56","57","58","59")] <- "50-59 years"
+survey_age$Age[survey_age$Age %in% c("60","61","62","63","64","65","66","67","68","69")] <- "60-69 years"
+survey_age$Age[survey_age$Age %in% c("70","71","72","73","74","75","76","77","78","79")] <- "70-79 years"
+survey_age$Age[survey_age$Age %in% c("80","81","82","83","84","85","86","87","88","89")] <- "80-89 years"
+survey_age$Age[survey_age$Age %in% c("90","91","92","93","94","95","96","97","98","99")] <- "90-99 years"
+
 survey_geo <- survey_geo %>% 
   mutate(Geography = paste0(State,"-",Remoteness))
 
@@ -52,21 +69,8 @@ survey_geo <- survey_geo %>%
 all_survey_geo <- all_survey_geo %>% 
   mutate(Geography = paste0(State,"-",Remoteness))
 
-#Age into deciles
-survey_age <- survey_age %>% 
-  mutate(Total = Kidney.Disease+No.Kidney.Disease)
-survey_age$Age <- as.character(survey_age$Age)
-survey_age$Age[survey_age$Age %in% c("1","2","3","4","5","6","7","8","9")] <- "0-9 years"
-survey_age$Age[survey_age$Age %in% c("10","11","12","13","14","15","16","17","18","19")] <- "10-19 years"
-survey_age$Age[survey_age$Age %in% c("20","21","22","23","24","25","26","27","28","29")] <- "20-29 years"
-survey_age$Age[survey_age$Age %in% c("30","31","32","33","34","35","36","37","38","39")] <- "30-39 years"
-survey_age$Age[survey_age$Age %in% c("30","31","32","33","34","35","36","37","38","39")] <- "30-39 years"
-survey_age$Age[survey_age$Age %in% c("40","41","42","43","44","45","46","47","48","49")] <- "40-49 years"
-survey_age$Age[survey_age$Age %in% c("50","51","52","53","54","55","56","57","58","59")] <- "50-59 years"
-survey_age$Age[survey_age$Age %in% c("60","61","62","63","64","65","66","67","68","69")] <- "60-69 years"
-survey_age$Age[survey_age$Age %in% c("70","71","72","73","74","75","76","77","78","79")] <- "70-79 years"
-survey_age$Age[survey_age$Age %in% c("80","81","82","83","84","85","86","87","88","89")] <- "80-89 years"
-survey_age$Age[survey_age$Age %in% c("90","91","92","93","94","95","96","97","98","99")] <- "90-99 years"
+
+
 
 # Income translated from deciles
 # $1-$299 (less than $390)
@@ -103,7 +107,7 @@ survey_incm$incm[survey_incm$incm =="Sixth decile"] <- "$1,250-$1,499"
 survey_incm$incm[survey_incm$incm =="Seventh decile"] <- "$1,500-$1,999"
 survey_incm$incm[survey_incm$incm =="Eighth decile"|survey_incm$incm =="Ninth decile"|survey_incm$incm =="Tenth decile"] <- "$2,000 or more"
 survey_incm <- survey_incm %>% 
-  select(incm,deciles,Kidney.Disease)
+  select(incm,deciles,Kidney.Disease,rse)
 
 
 #Total Kidney Disease data
@@ -132,9 +136,22 @@ all_survey_incm$incm[all_survey_incm$incm =="Sixth decile"] <- "$1,250-$1,499"
 all_survey_incm$incm[all_survey_incm$incm =="Seventh decile"] <- "$1,500-$1,999"
 all_survey_incm$incm[all_survey_incm$incm =="Eighth decile"|all_survey_incm$incm =="Ninth decile"|all_survey_incm$incm =="Tenth decile"] <- "$2,000 or more"
 all_survey_incm <- all_survey_incm %>% 
-  select(incm,deciles,All.Kidney.Disease)
+  select(incm,deciles,All.Kidney.Disease,rse)
 
 # Summarise data ----
+
+# Correlation of health factors
+
+comord <- as.vector(survey_health %>% filter(d1d2type=="Kidney.Disease and Diabetes"))
+comorbidity(comord$d1,comord$d2,comord$com, labels = c("Kidney","Diabetes"))
+
+comord <- as.vector(survey_health %>% filter(d1d2type=="Kidney.Disease and CVD"))
+comorbidity(comord$d1,comord$d2,comord$com, labels = c("Kidney","CVD"))
+
+comord <- as.vector(survey_health %>% filter(d1d2type=="Kidney.Disease and Diabetes"))
+comorbidity(comord$d1,comord$d2,comord$com, labels = c("Kidney","Diabetes"))
+
+
 # For all survey sets
 dim(survey_age)
 vis_dat(survey_age) #factor and numeric features
@@ -185,18 +202,44 @@ vis_miss(survey_ds_miss) # 12% 0 values
 
 
 # Histograms of data ----
+# age
+total <- sum(survey_age$Kidney.Disease)
+age_plot <- survey_age %>% 
+  group_by(Age) %>% 
+  summarise(Kidney.Disease=sum(Kidney.Disease),
+            rse = mean(rse),
+            proportion = Kidney.Disease/total)
+
+ggplot(age_plot, aes(Age,Kidney.Disease)) + geom_bar(stat="identity", fill="#999999") + 
+  labs(title="Indigenous Persons with Kidney disease", 
+       subtitle="Age distribution with error bars") + theme_classic() +
+  geom_errorbar(aes(ymin=Kidney.Disease+Kidney.Disease*(rse/2), ymax=Kidney.Disease-Kidney.Disease*(rse/2)), colour="black", width=.1) 
+
 #incm
-survey_incm$deciles <- reorder(survey_incm$incm, survey_incm$deciles)
-g <- ggplot(survey_incm, aes(deciles,Kidney.Disease))
+incm_plot <- survey_incm %>% 
+  group_by(incm,deciles) %>% 
+  summarise(Kidney.Disease=sum(Kidney.Disease),
+            rse = mean(rse))
+incm_plot$deciles <- reorder(incm_plot$incm, incm_plot$deciles)
+g <- ggplot(incm_plot, aes(deciles,Kidney.Disease))
 g + geom_bar(stat="identity", colour="black") + 
   labs(title="Indigenous persons with Kidney disease", 
-       subtitle="Distribution of Weekly Income level") + theme_classic()
+       subtitle="Distribution of Weekly Income level with RSE") +
+  theme_classic() +
+  geom_errorbar(aes(ymin=Kidney.Disease+Kidney.Disease*(rse/200), ymax=Kidney.Disease-Kidney.Disease*(rse/200)), colour="black", width=.1) 
 
-all_survey_incm$deciles <- reorder(all_survey_incm$incm, all_survey_incm$deciles)
-g <- ggplot(all_survey_incm, aes(deciles,All.Kidney.Disease))
+all_incm_plot <- all_survey_incm %>% 
+  group_by(incm,deciles) %>% 
+  summarise(Kidney.Disease=sum(All.Kidney.Disease),
+            rse = mean(rse))
+all_incm_plot$deciles <- reorder(all_incm_plot$incm, all_incm_plot$deciles)
+g <- ggplot(all_incm_plot, aes(deciles,Kidney.Disease))
 g + geom_bar(stat="identity", colour="black") + 
   labs(title="All persons with Kidney disease", 
-       subtitle="Distribution of Weekly Income level") + theme_classic()
+       subtitle="Distribution of Weekly Income level") + 
+  theme_classic() +
+  geom_errorbar(aes(ymin=Kidney.Disease+Kidney.Disease*(rse/200), ymax=Kidney.Disease-Kidney.Disease*(rse/200)), colour="black", width=.1) 
+
 
 
 incm_plot <- left_join(survey_incm,all_survey_incm, by=c("incm","deciles"))
@@ -211,10 +254,6 @@ ggplot(incm_plot, aes(x=incm,y=Kidney.Disease, colour=Type)) + geom_bar(stat="id
   labs(title="Persons with Kidney disease", 
        subtitle="Distribution of Weekly Income level") + theme_classic()
 
-# age
-ggplot(survey_age, aes(Age,Kidney.Disease)) + geom_bar(stat="identity", fill="#999999") + 
-  labs(title="Indigenous Persons with Kidney disease", 
-       subtitle="Age distribution") + theme_classic()
 
 #remoteness - leaflet map
 library(sp)
@@ -222,28 +261,36 @@ library(rgdal)
 library(broom)
 library(data.table)
 library(leaflet)
-
+library(mapview)
 remote_poly = readOGR("/Users/sarahhepworth/Documents/R Sandbox/data/remoteness_shape/RA_2011_AUST.shp", stringsAsFactors=FALSE)
 remote_poly@data$STE_RA = paste0(remote_poly@data$STE_NAME11,"-",remote_poly@data$RA_NAME11)
 
 # Join the CSV data to the shapefile:
-survey_remote_poly = merge(x=remote_poly, y=survey_geo, by.x="STE_RA",by.y="Geography")
+survey_remote_poly = merge(x=remote_poly, y=geo_plot, by.x="STE_RA",by.y="Geography")
+
+total <- sum(survey_geo$Kidney.Disease)
+geo_plot <- survey_geo %>% 
+  group_by(Geography) %>% 
+  summarise(Kidney.Disease=sum(Kidney.Disease),
+            proportion = Kidney.Disease/total)
+
+
 
 #proj4string(survey_phn) <- CRS("+init=epsg:4283")
 #survey_poly2 <- spTransform(survey_phn, prj.LatLong)
 
 ## define a palette for the colour
-pal <- colorNumeric(palette = "PuRd",
-                    domain = survey_remote_poly$Kidney.Disease)
+pal <- colorNumeric(palette = "YlOrRd",
+                    domain = survey_remote_poly$proportion)
 #polygons
 leaflet(data=survey_remote_poly) %>%
   addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
               opacity = 1.0, fillOpacity = 0.5,
-              fillColor = ~pal(Kidney.Disease),
+              fillColor = ~pal(proportion),
               highlightOptions = highlightOptions(color = "white", weight = 2,
                                                   bringToFront = TRUE)) %>%
-  addLegend(position = "bottomleft", pal = pal, values = ~Kidney.Disease) 
-
+  addLegend(position = "bottomleft", pal = pal, values = ~proportion, title="Kidney Disease (proportion)") 
+#mapshot(m, file = "~/Rplot.png")
 # Extracting point locations for each polygon 
 #remote_poly@data$id = rownames(remote_poly@data)
 #remote_poly.points = tidy(remote_poly)
