@@ -93,7 +93,7 @@ survey_incm$incm[survey_incm$incm =="Sixth decile"] <- "$1,250-$1,499"
 survey_incm$incm[survey_incm$incm =="Seventh decile"] <- "$1,500-$1,999"
 survey_incm$incm[survey_incm$incm =="Eighth decile"|survey_incm$incm =="Ninth decile"|survey_incm$incm =="Tenth decile"] <- "$2,000 or more"
 survey_incm <- survey_incm %>% 
-  mutate(Total = Not.reported+Kidney.Disease+No.Kidney.Disease)
+  mutate(Total = Not.Reported+Kidney.Disease+No.Kidney.Disease)
 
 
 survey_phn <- survey_phn %>% 
