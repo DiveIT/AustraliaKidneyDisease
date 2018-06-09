@@ -1,14 +1,14 @@
-Gross weekly cash income of household: deciles,All.Kidney.Disease
-Not applicable,0
-First decile,20.5
-Second decile,14.2
-Third decile,29.4
-Fourth decile,15.9
-Fifth decile,12.4
-Sixth decile,12.7
-Seventh decile,20.8
-Eighth decile,7.6
-Ninth decile,16.4
-Tenth decile,9.4
-Not stated,2.4
-Not known,23.3
+Gross weekly cash income of household: deciles,All.Kidney.Disease,rse
+Not applicable,0,0
+First decile,20.5,0.1747
+Second decile,14.2,0.2518
+Third decile,29.4,0.1596
+Fourth decile,15.9,0.2258
+Fifth decile,12.4,0.4141
+Sixth decile,12.7,0.3302
+Seventh decile,20.8,0.2567
+Eighth decile,7.6,0.4195
+Ninth decile,16.4,0.331
+Tenth decile,9.4,0.3352
+Not stated,2.4,0.5
+Not known,23.3,0.2507
