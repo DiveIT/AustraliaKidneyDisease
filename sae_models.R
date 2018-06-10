@@ -28,7 +28,7 @@ load("./Survey-Data/SurveyData.RData")
 # Models ----
 
 # Survey data is aggregated, and smaller areas have large errors.
-# Indirect domain estimation ----
+# Indirect domain estimation with plot ----
 # Compute post-stratified synthetic estimators of kidney disease
 # for SA2 areas considering the income levels as post-strata.
 
@@ -126,3 +126,5 @@ leaflet(data=results_poly) %>%
 
 
 # TODO: Model-based MSE estimates ----
+
+# TODO: HB model ----
