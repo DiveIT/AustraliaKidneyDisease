@@ -8,6 +8,8 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+setwd("D:/Education/2015-2018 - Master of Data Science/2018-S1 - Data Science Professional Development 2/AustraliaKidneyDisease")
+
 library(dplyr)
 library(car)
 library(multcompView)
@@ -15,6 +17,16 @@ library(lsmeans)
 library(rcompanion)
 library(boot)
 library(MASS)
+library(htmlTable)
+
+library(sp)
+library(rgdal)
+library(broom)
+library(data.table)
+library(leaflet)
+library(tidyr)
+
+library(sae) # small area estimation
 
 # Import Census data
 load("./Processed-Data/CensusData.RData")
@@ -22,22 +34,71 @@ load("./Processed-Data/CensusData.RData")
 # Import health survey data
 load("./Survey-Data/SurveyData.RData")
 
-survey_incm <- survey_incm %>% 
-  mutate(strata=0)
-survey_incm$strata[survey_incm$incm =="$1-$299"] <- 1
-survey_incm$strata[survey_incm$incm =="$300-$399"] <- 2
-survey_incm$strata[survey_incm$incm =="$400-$799"] <- 3
-survey_incm$strata[survey_incm$incm =="$800-$999"] <- 4
-survey_incm$strata[survey_incm$incm =="$1,000-$1,249"] <- 5
-survey_incm$strata[survey_incm$incm =="$1,250-$1,499"] <- 6
-survey_incm$strata[survey_incm$incm =="$1,500-$1,999"] <- 7
-survey_incm$strata[survey_incm$incm =="$2,000 or more"] <- 8
+```
+
+```{r Process}
+
+# Roll up to larger area - if R and VR, then R
+censusIndigenous2011 <- censusIndigenous2011 %>% 
+  mutate(InnerRegional=ifelse(City>0 & InnerRegional>0,0,InnerRegional),
+         OuterRegional=ifelse(InnerRegional>0 & OuterRegional>0,0,OuterRegional),
+         Remote=ifelse(OuterRegional>0 & Remote>0,0,Remote),
+         VeryRemote=ifelse(Remote>0&VeryRemote>0,0,VeryRemote))
+
+censusIndigenous2011 <- censusIndigenous2011 %>% 
+  gather("Remoteness","value",3:8) %>% 
+  filter(value>0)
+
+censusIndigenous2016 <- censusIndigenous2016 %>% 
+  mutate(InnerRegional=ifelse(City>0 & InnerRegional>0,0,InnerRegional),
+         OuterRegional=ifelse(InnerRegional>0 & OuterRegional>0,0,OuterRegional),
+         Remote=ifelse(OuterRegional>0 & Remote>0,0,Remote),
+         VeryRemote=ifelse(Remote>0&VeryRemote>0,0,VeryRemote))
+
+censusIndigenous2016 <- censusIndigenous2016 %>% 
+  gather("Remoteness","value",3:8) %>% 
+  filter(value>0)
+
+# rename variables back to match polygons
+censusIndigenous2011 <- censusIndigenous2011 %>% 
+  mutate(State = case_when(State=="NSW" ~ "New South Wales",
+                           State=="QLD" ~ "Queensland",
+                           State=="VIC" ~ "Victoria",
+                           State=="TAS" ~ "Tasmania",
+                           State=="SA" ~ "South Australia",
+                           State=="WA" ~ "Western Australia",
+                           State=="NT"~"Northern Territory",
+                           State=="ACT" ~ "Australian Capital Territory"),
+         Remoteness = case_when(Remoteness=="City" ~ "Major Cities of Australia",
+                                Remoteness=="InnerRegional" ~ "Inner Regional Australia",
+                                Remoteness=="OuterRegional" ~ "Outer Regional Australia",
+                                Remoteness=="Remote" ~ "Remote Australia",
+                                Remoteness=="VeryRemote" ~ "Very Remote Australia"))
+
+censusIndigenous2011$Geography <- paste0(censusIndigenous2011$State,"-",censusIndigenous2011$Remoteness)
+
+censusIndigenous2016 <- censusIndigenous2016 %>% 
+  mutate(State = case_when(State=="NSW" ~ "New South Wales",
+                           State=="QLD" ~ "Queensland",
+                           State=="VIC" ~ "Victoria",
+                           State=="TAS" ~ "Tasmania",
+                           State=="SA" ~ "South Australia",
+                           State=="WA" ~ "Western Australia",
+                           State=="NT"~"Northern Territory",
+                           State=="ACT" ~ "Australian Capital Territory"),
+         Remoteness = case_when(Remoteness=="City" ~ "Major Cities of Australia",
+                                Remoteness=="InnerRegional" ~ "Inner Regional Australia",
+                                Remoteness=="OuterRegional" ~ "Outer Regional Australia",
+                                Remoteness=="Remote" ~ "Remote Australia",
+                                Remoteness=="VeryRemote" ~ "Very Remote Australia"))
+
+censusIndigenous2016$Geography <- paste0(censusIndigenous2016$State,"-",censusIndigenous2016$Remoteness)
 
 ```
 
-# Generalised Linear Model
+# Generalised Linear Model - Age
 
-```{r Linear-Kidney}
+```{r Linear-Age}
 
 # https://www.statmethods.net/stats/regression.html
 # Regression for Count data: http://rcompanion.org/handbook/J_01.html
@@ -46,97 +107,278 @@ survey_incm$strata[survey_incm$incm =="$2,000 or more"] <- 8
 # Generalised linear model to predict kidney disease in Indigenous population
 #   Regression for count data (generalised linear regression)
 #   Generalised linear models are used when the dependent variable is count, binary, multinomial, etc.
-glmFit <- glm(Kidney.Disease ~ Age + Sex + Total, data = survey_age)
+glmFit <- glm(Kidney.Disease/Total ~ Age, data = survey_age)
 glmFit$family # The family object used
 
-step <- stepAIC(glmFit, direction="both")
-step$anova # display results
-
 # Diagnostics
-anova(step)
-summary(step)
-Anova(step, type="II", test="LR")
+anova(glmFit)
+summary(glmFit)
+Anova(glmFit, type="II", test="LR")
 
-fitDiag <- glm.diag(step)
-glm.diag.plots(step, fitDiag)
+fitDiag <- glm.diag(glmFit)
+glm.diag.plots(glmFit, fitDiag)
 
-x = residuals(step)
+x = residuals(glmFit)
 plotNormalHistogram(x)
   
-qqnorm(residuals(step), ylab="Sample Quantiles for residuals")
-qqline(residuals(step), col="red")
+qqnorm(residuals(glmFit), ylab="Sample Quantiles for residuals")
+qqline(residuals(glmFit), col="red")
 
-plot(fitted(step), residuals(step))
+plot(fitted(glmFit), residuals(glmFit))
 
-# TODO: Apply to 2011 Indigenous Census data
+rm(fitDiag, x)
 
+# Apply to 2011 Indigenous Census data - predicts kidney disease rate (Kidney Disease / Total)
+  data <- censusIndigenous2011
+  data$Age <- as.character(data$Age)
+  data$Age[data$Age == "80-89 years" | data$Age == "90-99 years"] <- "75 or over" 
+  
+  prediction2011 <- predict(glmFit, data.frame(Age=data$Age))
+  
+  prediction2011 <- data.frame(Geography=data$Geography, Prediction=prediction2011)
+  prediction2011 <- aggregate(Prediction ~ Geography , mean, data=prediction2011)
+  
+  display <- txtRound(prediction2011, 3)
+  
+# 2011 Map
+
+  remote_poly = readOGR(path.expand("./Processed-Data/RemotenessAreaShapeFile/RA_2011_AUST.shp"), 
+                        stringsAsFactors=FALSE)
+  remote_poly@data$STE_RA = paste0(remote_poly@data$STE_NAME11,"-",remote_poly@data$RA_NAME11)
+  
+  # Join the CSV data to the shapefile:
+  results_poly = merge(x=remote_poly, y=prediction2011, by.x="STE_RA",by.y="Geography")
+  
+  ## define a palette for the colour
+  pal <- colorNumeric(palette = "YlOrRd",
+                      domain = prediction2011$Prediction)
+  #polygons
+  leaflet(data=results_poly) %>%
+    addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+                opacity = 1.0, fillOpacity = 0.5,
+                fillColor = ~pal(Prediction),
+                highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                    bringToFront = TRUE)) %>%
+    addLegend(position = "bottomleft", pal = pal, values = ~Prediction, title="Kidney Disease (proportion)") 
+
+# Apply to 2016 Census
+  data <- censusIndigenous2016
+  data$Age <- as.character(data$Age)
+  data$Age[data$Age == "80-89 years" | data$Age == "90-99 years"] <- "75 or over" 
+  
+  prediction2016 <- predict(glmFit, data.frame(Age=data$Age))
+  
+  prediction2016 <- data.frame(Geography=data$Geography, Prediction=prediction2016)
+  prediction2016 <- aggregate(Prediction ~ Geography , mean, data=prediction2016)
+  
+# 2016 Map
+
+  remote_poly = readOGR(path.expand("./Processed-Data/RemotenessAreaShapeFile/RA_2011_AUST.shp"), 
+                        stringsAsFactors=FALSE)
+  remote_poly@data$STE_RA = paste0(remote_poly@data$STE_NAME11,"-",remote_poly@data$RA_NAME11)
+  
+  # Join the CSV data to the shapefile:
+  results_poly = merge(x=remote_poly, y=prediction2016, by.x="STE_RA",by.y="Geography")
+  
+  ## define a palette for the colour
+  pal <- colorNumeric(palette = "YlOrRd",
+                      domain = prediction2016$Prediction)
+  #polygons
+  leaflet(data=results_poly) %>%
+    addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+                opacity = 1.0, fillOpacity = 0.5,
+                fillColor = ~pal(Prediction),
+                highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                    bringToFront = TRUE)) %>%
+    addLegend(position = "bottomleft", pal = pal, values = ~Prediction, title="Kidney Disease (proportion)") 
+  
+```
+
+# Generalised Linear Model - Remoteness Area
+
+```{r Linear-Remotness}
+
+glmFit <- glm(Kidney.Disease/Total ~ State + Remoteness, data = survey_geo)
+glmFit$family # The family object used
+
+# Diagnostics
+anova(glmFit)
+summary(glmFit)
+Anova(glmFit, type="II", test="LR")
+
+fitDiag <- glm.diag(glmFit)
+glm.diag.plots(glmFit, fitDiag)
+
+x = residuals(glmFit)
+plotNormalHistogram(x)
+  
+qqnorm(residuals(glmFit), ylab="Sample Quantiles for residuals")
+qqline(residuals(glmFit), col="red")
+
+plot(fitted(glmFit), residuals(glmFit))
+
+rm(fitDiag, x)
+
+# Apply to 2011 Indigenous Census data - predicts kidney disease rate (Kidney Disease / Total)
+  data <- censusIndigenous2011
+  data$Remoteness[data$Remoteness == "Very Remote Australia"] <- 
+    "Very Remote Australia, Migratory (does not feature in these data), No usual address"
+
+  prediction2011 <- predict(glmFit, data.frame(State=data$State, Remoteness=data$Remoteness))
+  
+  prediction2011 <- data.frame(Geography=data$Geography, Prediction=prediction2011)
+  prediction2011 <- aggregate(Prediction ~ Geography , mean, data=prediction2011)
+
+# 2011 Map
+
+  remote_poly = readOGR(path.expand("./Processed-Data/RemotenessAreaShapeFile/RA_2011_AUST.shp"), 
+                        stringsAsFactors=FALSE)
+  remote_poly@data$STE_RA = paste0(remote_poly@data$STE_NAME11,"-",remote_poly@data$RA_NAME11)
+  
+  # Join the CSV data to the shapefile:
+  results_poly = merge(x=remote_poly, y=prediction2011, by.x="STE_RA",by.y="Geography")
+  
+  ## define a palette for the colour
+  pal <- colorNumeric(palette = "YlOrRd",
+                      domain = prediction2011$Prediction)
+  #polygons
+  leaflet(data=results_poly) %>%
+    addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+                opacity = 1.0, fillOpacity = 0.5,
+                fillColor = ~pal(Prediction),
+                highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                    bringToFront = TRUE)) %>%
+    addLegend(position = "bottomleft", pal = pal, values = ~Prediction, title="Kidney Disease (proportion)") 
+
+# Apply to 2016 Census
+  data <- censusIndigenous2016
+  data$Remoteness[data$Remoteness == "Very Remote Australia"] <- 
+    "Very Remote Australia, Migratory (does not feature in these data), No usual address"
+
+  prediction2016 <- predict(glmFit, data.frame(State=data$State, Remoteness=data$Remoteness))
+  
+  prediction2016 <- data.frame(Geography=data$Geography, Prediction=prediction2016)
+  prediction2016 <- aggregate(Prediction ~ Geography , mean, data=prediction2016)
+  
+# 2016 Map
+
+  remote_poly = readOGR(path.expand("./Processed-Data/RemotenessAreaShapeFile/RA_2011_AUST.shp"), 
+                        stringsAsFactors=FALSE)
+  remote_poly@data$STE_RA = paste0(remote_poly@data$STE_NAME11,"-",remote_poly@data$RA_NAME11)
+  
+  # Join the CSV data to the shapefile:
+  results_poly = merge(x=remote_poly, y=prediction2016, by.x="STE_RA",by.y="Geography")
+  
+  ## define a palette for the colour
+  pal <- colorNumeric(palette = "YlOrRd",
+                      domain = prediction2016$Prediction)
+  #polygons
+  leaflet(data=results_poly) %>%
+    addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+                opacity = 1.0, fillOpacity = 0.5,
+                fillColor = ~pal(Prediction),
+                highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                    bringToFront = TRUE)) %>%
+    addLegend(position = "bottomleft", pal = pal, values = ~Prediction, title="Kidney Disease (proportion)")
 
 ```
 
+# Generalised Linear Model - Income
 
-# Small Area Estimation
+```{r Linear-Income}
 
-In this section some simple small area estimation models are trained to try and estimate the number of Indigenous people in different SA2 areas. This is improve knowledge in how to train and evaluate the models. More advanced models will be created to estimate the number of Indigenous people with kidney disease using the health survey data.
+glmFit <- glm(Kidney.Disease/Total ~ incm, data = survey_incm)
+glmFit$family # The family object used
 
-```{r Estimation}
+# Diagnostics
+anova(glmFit)
+summary(glmFit)
+Anova(glmFit, type="II", test="LR")
 
-library(sae) # small area estimation
-library(rsae) # robust small area estimation
+#fitDiag <- glm.diag(glmFit)
+#glm.diag.plots(glmFit, fitDiag)
 
-attach(censusIndigenous2011)
-Xs <- cbind(City, InnerRegional, OuterRegional, Remote, VeryRemote) # Construct design matrix for sample elements
-domains <- as.numeric(unique(State))
-detach(censusIndigenous2011)
-
-attach(censusIndigenous2016)
-Xoutsamp <- cbind(as.numeric(State), City, InnerRegional, OuterRegional, Remote, VeryRemote) 
-#Xoutsamp <- Xoutsamp[SA2 %in% domains,]
-detach(censusIndigenous2016)
-
-#attach(censusIndigenous2011)
-#result <- ebBHF(Count ~ Xs, dom=State, Xnonsample=Xoutsamp, 
-#                MC=10, constant=3600, indicator=function(y) {y})
-#detach(censusIndigenous2011)
-
-# EXAMPLE
-
-  data(incomedata) # Load data set
-  attach(incomedata)
+x = residuals(glmFit)
+plotNormalHistogram(x)
   
-  # Construct design matrix for sample elements
-  Xs <- cbind(age2, age3, age4, age5, nat1, educ1, educ3, labor1, labor2)
+qqnorm(residuals(glmFit), ylab="Sample Quantiles for residuals")
+qqline(residuals(glmFit), col="red")
+
+plot(fitted(glmFit), residuals(glmFit))
+
+rm(fitDiag, step, x)
+
+# Apply to 2011 Indigenous Census data - predicts kidney disease rate (Kidney Disease / Total)
+  data <- censusIndigenous2011
+  data$Income <- as.character(data$Income)
+  data$Income[data$Income == "Negative income" | data$Income == "Not stated" | 
+                data$Income == "Not applicable" | data$Income == "Nil income"] <- "Not known"
   
-  # Select the domains to compute EB estimators.
-  data(Xoutsamp)
+  prediction2011 <- predict(glmFit, data.frame(incm=data$Income))
   
-  domains <- unique(Xoutsamp[,"domain"])
+  prediction2011 <- data.frame(Geography=data$Geography, Prediction=prediction2011)
+  prediction2011 <- aggregate(Prediction ~ Geography , mean, data=prediction2011)
+
+# 2011 Map
+
+  remote_poly = readOGR(path.expand("./Processed-Data/RemotenessAreaShapeFile/RA_2011_AUST.shp"), 
+                        stringsAsFactors=FALSE)
+  remote_poly@data$STE_RA = paste0(remote_poly@data$STE_NAME11,"-",remote_poly@data$RA_NAME11)
   
-  # Poverty gap indicator
-  povertyline <- 0.6*median(income)
-  povertyline # 6477.484
-  povgap <- function(y)
-  {
-  z <- 6477.484
-  result <- mean((y<z) * (z-y) / z)
-  return (result)
-  }
+  # Join the CSV data to the shapefile:
+  results_poly = merge(x=remote_poly, y=prediction2011, by.x="STE_RA",by.y="Geography")
   
-  # Compute EB predictors of poverty gap. The value constant=3600 is selected
-  # to achieve approximately symmetric residuals.
-  set.seed(123)
-  result <- ebBHF(income ~ Xs, dom=prov, selectdom=domains,
-  Xnonsample=Xoutsamp, MC=10, constant=3600, indicator=povgap)
-  result$eb
-  result$fit$summary
-  result$fit$fixed
-  result$fit$random[,1]
-  result$fit$errorvar
-  result$fit$refvar
-  result$fit$loglike
-  result$fit$residuals[1:10]
-  detach(incomedata)
+  ## define a palette for the colour
+  pal <- colorNumeric(palette = "YlOrRd",
+                      domain = prediction2011$Prediction)
+  #polygons
+  leaflet(data=results_poly) %>%
+    addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+                opacity = 1.0, fillOpacity = 0.5,
+                fillColor = ~pal(Prediction),
+                highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                    bringToFront = TRUE)) %>%
+    addLegend(position = "bottomleft", pal = pal, values = ~Prediction, title="Kidney Disease (proportion)") 
+
+# Apply to 2016 Census
+  data <- censusIndigenous2016
+  data$Income <- as.character(data$Income)
+  data$Income[data$Income == "Negative income" | data$Income == "Not stated" | 
+                data$Income == "Not applicable" | data$Income == "Nil income"] <- "Not known"
   
-  rm(domains, povertyline, result, Xs, Xoutsamp, incomedata, povgap)
+  prediction2016 <- predict(glmFit, data.frame(incm=data$Income))
+  
+  prediction2016 <- data.frame(Geography=data$Geography, Prediction=prediction2016)
+  prediction2016 <- aggregate(Prediction ~ Geography , mean, data=prediction2016)
+  
+# 2016 Map
+
+  remote_poly = readOGR(path.expand("./Processed-Data/RemotenessAreaShapeFile/RA_2011_AUST.shp"), 
+                        stringsAsFactors=FALSE)
+  remote_poly@data$STE_RA = paste0(remote_poly@data$STE_NAME11,"-",remote_poly@data$RA_NAME11)
+  
+  # Join the CSV data to the shapefile:
+  results_poly = merge(x=remote_poly, y=prediction2016, by.x="STE_RA",by.y="Geography")
+  
+  ## define a palette for the colour
+  pal <- colorNumeric(palette = "YlOrRd",
+                      domain = prediction2016$Prediction)
+  #polygons
+  leaflet(data=results_poly) %>%
+    addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+                opacity = 1.0, fillOpacity = 0.5,
+                fillColor = ~pal(Prediction),
+                highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                    bringToFront = TRUE)) %>%
+    addLegend(position = "bottomleft", pal = pal, values = ~Prediction, title="Kidney Disease (proportion)") 
+
+```
+
+# Evaluation
+
+```{r Evaluate}
+
+# TODO: Compare models
 
 ```
 
