@@ -139,4 +139,4 @@ leaflet(data=results_poly) %>%
 error_set <- result1 %>% left_join(survey_geo, by=("Geography"="Geography"))
 error_set <- error_set %>% mutate(rate=Kidney.Disease/Total)
 error_set$rate[is.na(error_set$rate)]<-0
-rmse(error_set$PsSyntheticPercent,error_set$rate)
+rmse(error_set$PsSynthetic,error_set$rate)

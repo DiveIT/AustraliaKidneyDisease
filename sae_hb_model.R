@@ -155,13 +155,6 @@ kidney = survey_geo %>%
 census_poly2 = getSMR(census_poly, kidneyRates, kidney,
                    regionCode="Geography")
 
-if(require('mapmisc', quietly=TRUE)) {
-  mycol = colourScale(census_poly2$SMR, breaks=9,
-                      dec=-log10(0.5), style='equal', transform='sqrt')
-  plot(census_poly2, col=mycol$plot)
-  legendBreaks('topleft', mycol)
-}
-
 kBYM = bym(observed ~ offset(logExpected) + weekly_income, census_poly2,
            priorCI = list(sdSpatial=c(0.1, 5), sdIndep=c(0.1, 5)),
            control.mode=list(theta=c(3.52, 3.35),restart=TRUE))
@@ -173,11 +166,28 @@ kBYM$data$exc1 = geostatsp::excProb(
   )
 
 
+# multiply by 100 for simliar results
+kBYM$data$fitted.expPercent <- kBYM$data$fitted.exp*100
+
+
 # plot model
-if(require('mapmisc', quietly=TRUE) & length(kBYM$data$fitted.exp)){
-  thecol = colourScale(kBYM$data$fitted.exp,
+if(require('mapmisc', quietly=TRUE) & length(kBYM$data$fitted.expPercent)){
+  thecol = colourScale(kBYM$data$fitted.expPercent,
                        breaks=5, dec=5, opacity = 0.7)
   map.new(kBYM$data)
   plot(kBYM$data, col=thecol$plot,add=TRUE)
   legendBreaks("topleft", thecol)
 }
+
+
+#Measuring MSE 
+Geography <- census_poly2@data$Geography
+model_results <- kBYM$data$fitted.exp
+
+error_set <- data.frame(Geography,model_results)
+
+error_set <- error_set %>% left_join(survey_strata, by=("Geography"="Geography"))
+error_set <- error_set %>% mutate(rate=Kidney.Disease/Total)
+error_set$model_results[is.na(error_set$model_results)]<-0
+error_set$rate[is.na(error_set$rate)]<-0
+rmse(error_set$model_results,error_set$rate)
