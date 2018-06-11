@@ -1,41 +1,41 @@
 State,Remoteness,Kidney.Disease,Total,RSE
 New South Wales,Major Cities of Australia,2,85.2,0.2977
 New South Wales,Inner Regional Australia,1.2,63.7,0.3554
-New South Wales,Outer Regional Australia,0.6,33,0.5000
+New South Wales,Outer Regional Australia,0.6,33,0.5
 New South Wales,Remote Australia,0.1,5.6,0.4113
-New South Wales,"Very Remote Australia, Migratory (does not feature in these data), No usual address",0,3,0.5000
+New South Wales,Very Remote Australia,0,3,0.5
 Victoria,Major Cities of Australia,0.7,21.8,0.3126
-Victoria,Inner Regional Australia,0.1,15.3,0.5000
-Victoria,Outer Regional Australia,0.3,6.5,0.5000
-Victoria,Remote Australia,0,0,0.0000
-Victoria,"Very Remote Australia, Migratory (does not feature in these data), No usual address",0,0,0.0000
+Victoria,Inner Regional Australia,0.1,15.3,0.5
+Victoria,Outer Regional Australia,0.3,6.5,0.5
+Victoria,Remote Australia,0,0,0
+Victoria,Very Remote Australia,0,0,0
 Queensland,Major Cities of Australia,0.6,53.5,0.4317
-Queensland,Inner Regional Australia,0.2,34.2,0.5000
+Queensland,Inner Regional Australia,0.2,34.2,0.5
 Queensland,Outer Regional Australia,1,51,0.3666
 Queensland,Remote Australia,0.4,12,0.3522
-Queensland,"Very Remote Australia, Migratory (does not feature in these data), No usual address",0.6,20.5,0.2452
-South Australia,Major Cities of Australia,0.1,16.9,0.5000
-South Australia,Inner Regional Australia,0,2.7,0.0000
-South Australia,Outer Regional Australia,0.1,8,0.5000
-South Australia,Remote Australia,0,1.4,0.5000
-South Australia,"Very Remote Australia, Migratory (does not feature in these data), No usual address",0.2,4.5,0.4550
-Western Australia,Major Cities of Australia,0.3,29.9,0.5000
-Western Australia,Inner Regional Australia,0,5.6,0.0000
-Western Australia,Outer Regional Australia,0.3,11.3,0.5000
-Western Australia,Remote Australia,0.2,13,0.5000
-Western Australia,"Very Remote Australia, Migratory (does not feature in these data), No usual address",0.4,18.4,0.2931
-Tasmania,Major Cities of Australia,0,0,0.0000
+Queensland,Very Remote Australia,0.6,20.5,0.2452
+South Australia,Major Cities of Australia,0.1,16.9,0.5
+South Australia,Inner Regional Australia,0,2.7,0
+South Australia,Outer Regional Australia,0.1,8,0.5
+South Australia,Remote Australia,0,1.4,0.5
+South Australia,Very Remote Australia,0.2,4.5,0.455
+Western Australia,Major Cities of Australia,0.3,29.9,0.5
+Western Australia,Inner Regional Australia,0,5.6,0
+Western Australia,Outer Regional Australia,0.3,11.3,0.5
+Western Australia,Remote Australia,0.2,13,0.5
+Western Australia,Very Remote Australia,0.4,18.4,0.2931
+Tasmania,Major Cities of Australia,0,0,0
 Tasmania,Inner Regional Australia,0.2,12.1,0.4534
-Tasmania,Outer Regional Australia,0.1,9.6,0.5000
-Tasmania,Remote Australia,0,0.8,0.0000
-Tasmania,"Very Remote Australia, Migratory (does not feature in these data), No usual address",0,0,0.0000
-Northern Territory,Major Cities of Australia,0,0,0.0000
-Northern Territory,Inner Regional Australia,0,0,0.0000
-Northern Territory,Outer Regional Australia,0.1,12.1,0.5000
+Tasmania,Outer Regional Australia,0.1,9.6,0.5
+Tasmania,Remote Australia,0,0.8,0
+Tasmania,Very Remote Australia,0,0,0
+Northern Territory,Major Cities of Australia,0,0,0
+Northern Territory,Inner Regional Australia,0,0,0
+Northern Territory,Outer Regional Australia,0.1,12.1,0.5
 Northern Territory,Remote Australia,0.6,12.5,0.2314
-Northern Territory,"Very Remote Australia, Migratory (does not feature in these data), No usual address",0.6,37.5,0.2298
-Australian Capital Territory,Major Cities of Australia,0.1,5.6,0.5000
-Australian Capital Territory,Inner Regional Australia,0,0,0.0000
-Australian Capital Territory,Outer Regional Australia,0,0,0.0000
-Australian Capital Territory,Remote Australia,0,0,0.0000
-Australian Capital Territory,"Very Remote Australia, Migratory (does not feature in these data), No usual address",0,0,0.0000
+Northern Territory,Very Remote Australia,0.6,37.5,0.2298
+Australian Capital Territory,Major Cities of Australia,0.1,5.6,0.5
+Australian Capital Territory,Inner Regional Australia,0,0,0
+Australian Capital Territory,Outer Regional Australia,0,0,0
+Australian Capital Territory,Remote Australia,0,0,0
+Australian Capital Territory,Very Remote Australia,0,0,0
