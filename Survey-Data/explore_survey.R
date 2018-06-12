@@ -32,6 +32,7 @@ survey_health <- read.csv("./data/comorbidity.csv")
 # Australian Health Survey
 all_survey_incm <- read.csv("./data/AllKidneyIncome.csv")
 all_survey_geo <- read.csv("./data/AllKidneyStateRemoteness.csv")
+all_sex_age <- read.csv("./data/AllKidneySexAge.csv")
 
 # Transform data ----
 #Age into deciles
@@ -49,6 +50,37 @@ survey_age$Age[survey_age$Age %in% c("60","61","62","63","64","65","66","67","68
 survey_age$Age[survey_age$Age %in% c("70","71","72","73","74","75","76","77","78","79")] <- "70-79 years"
 survey_age$Age[survey_age$Age %in% c("80","81","82","83","84","85","86","87","88","89")] <- "80-89 years"
 survey_age$Age[survey_age$Age %in% c("90","91","92","93","94","95","96","97","98","99")] <- "90-99 years"
+
+#All Age into deciles
+all_sex_age <- all_sex_age %>% 
+  mutate(rate = Kidney.Disease/Total)
+all_sex_age$Category <- as.character(all_sex_age$Age)
+all_sex_age$Category[all_sex_age$Category %in% c("1","2","3","4","5","6","7","8","9") & all_sex_age$Sex=="Male"] <- "M_10"
+all_sex_age$Category[all_sex_age$Category %in% c("1","2","3","4","5","6","7","8","9") & all_sex_age$Sex=="Female"] <- "M_10"
+all_sex_age$Category[all_sex_age$Category %in% c("10","11","12","13","14","15","16","17","18","19")& all_sex_age$Sex=="Male"] <- "M_20"
+all_sex_age$Category[all_sex_age$Category %in% c("10","11","12","13","14","15","16","17","18","19")& all_sex_age$Sex=="Female"] <- "F_20"
+all_sex_age$Category[all_sex_age$Category %in% c("20","21","22","23","24","25","26","27","28","29") & all_sex_age$Sex=="Male"] <- "M_30"
+all_sex_age$Category[all_sex_age$Category %in% c("20","21","22","23","24","25","26","27","28","29") & all_sex_age$Sex=="Female"] <- "F_30"
+all_sex_age$Category[all_sex_age$Category %in% c("30","31","32","33","34","35","36","37","38","39") & all_sex_age$Sex=="Male"] <- "M_40"
+all_sex_age$Category[all_sex_age$Category %in% c("30","31","32","33","34","35","36","37","38","39") & all_sex_age$Sex=="Female"] <- "F_40"
+all_sex_age$Category[all_sex_age$Category %in% c("30","31","32","33","34","35","36","37","38","39") & all_sex_age$Sex=="Male"] <- "M_50"
+all_sex_age$Category[all_sex_age$Category %in% c("30","31","32","33","34","35","36","37","38","39") & all_sex_age$Sex=="Female"] <- "F_50"
+all_sex_age$Category[all_sex_age$Category %in% c("40","41","42","43","44","45","46","47","48","49") & all_sex_age$Sex=="Male"] <- "M_60"
+all_sex_age$Category[all_sex_age$Category %in% c("40","41","42","43","44","45","46","47","48","49") & all_sex_age$Sex=="Female"] <- "F_60"
+all_sex_age$Category[all_sex_age$Category %in% c("50","51","52","53","54","55","56","57","58","59") & all_sex_age$Sex=="Male"] <- "M_70"
+all_sex_age$Category[all_sex_age$Category %in% c("50","51","52","53","54","55","56","57","58","59") & all_sex_age$Sex=="Female"] <- "F_70"
+all_sex_age$Category[all_sex_age$Category %in% c("60","61","62","63","64","65","66","67","68","69",
+                                                 "70","71","72","73","74","75","76","77","78","79",
+                                                 "80","81","82","83","84","85","86","87","88","89",
+                                                 "90","91","92","93","94","95","96","97","98","99","75 or over") & all_sex_age$Sex=="Male"]  <- "M_80"
+all_sex_age$Category[all_sex_age$Category %in% c("60","61","62","63","64","65","66","67","68","69",
+                                                 "70","71","72","73","74","75","76","77","78","79",
+                                                 "80","81","82","83","84","85","86","87","88","89",
+                                                 "90","91","92","93","94","95","96","97","98","99","75 or over") & all_sex_age$Sex=="Female"]  <- "F_80"
+
+
+
+
 
 #Geographic info into strata
 survey_geo <- survey_geo %>% 
@@ -315,4 +347,4 @@ leaflet(data=all_survey_remote_poly) %>%
 # TODO: Select most appropriate data
 
 # Save data
-save(survey_age,survey_geo,survey_incm,file="./SurveyData.RData")
+save(survey_age,survey_geo,survey_incm,all_sex_age,file="./SurveyData.RData")

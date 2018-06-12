@@ -1,0 +1,41 @@
+State,Remoteness,Male,Female
+New South Wales,Major Cities of Australia,1.9,1.5
+New South Wales,Outer Regional Australia,0,0.4
+New South Wales,Inner Regional Australia,0.8,0.5
+New South Wales,Remote Australia,0.1,0.1
+New South Wales,Very Remote Australia,0,0
+Victoria,Major Cities of Australia,0.2,0.6
+Victoria,Outer Regional Australia,0,0.1
+Victoria,Inner Regional Australia,0.1,0.1
+Victoria,Remote Australia,0,0
+Victoria,Very Remote Australia,0,0
+Queensland,Major Cities of Australia,0.6,0.7
+Queensland,Outer Regional Australia,0.7,0.7
+Queensland,Inner Regional Australia,0.3,0.5
+Queensland,Remote Australia,0.4,0.2
+Queensland,Very Remote Australia,0.4,0.6
+South Australia,Major Cities of Australia,0.3,0.2
+South Australia,Outer Regional Australia,0.1,0.3
+South Australia,Inner Regional Australia,0,0
+South Australia,Remote Australia,0,0
+South Australia,Very Remote Australia,0,0.1
+Western Australia,Major Cities of Australia,0.2,0.1
+Western Australia,Outer Regional Australia,0.3,0.2
+Western Australia,Inner Regional Australia,0,0
+Western Australia,Remote Australia,0.1,0.5
+Western Australia,Very Remote Australia,0.4,0.4
+Tasmania,Major Cities of Australia,0,0
+Tasmania,Outer Regional Australia,0.1,0.2
+Tasmania,Inner Regional Australia,0.1,0.2
+Tasmania,Remote Australia,0,0
+Tasmania,Very Remote Australia,0,0
+Northern Territory,Major Cities of Australia,0,0
+Northern Territory,Outer Regional Australia,0.1,0
+Northern Territory,Inner Regional Australia,0,0
+Northern Territory,Remote Australia,0.3,0.3
+Northern Territory,Very Remote Australia,0.4,0.9
+Australian Capital Territory,Major Cities of Australia,0,0.1
+Australian Capital Territory,Outer Regional Australia,0,0
+Australian Capital Territory,Inner Regional Australia,0,0
+Australian Capital Territory,Remote Australia,0,0
+Australian Capital Territory,Very Remote Australia,0,0
