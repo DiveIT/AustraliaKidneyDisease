@@ -17,6 +17,7 @@ library(lsmeans)
 library(rcompanion)
 library(boot)
 library(MASS)
+library(tableHTML)
 library(htmlTable)
 
 library(sp)
@@ -27,6 +28,8 @@ library(leaflet)
 library(tidyr)
 
 library(sae) # small area estimation
+
+library(Metrics)
 
 # Import Census data
 load("./Processed-Data/CensusData.RData")
@@ -94,7 +97,50 @@ censusIndigenous2016 <- censusIndigenous2016 %>%
 
 censusIndigenous2016$Geography <- paste0(censusIndigenous2016$State,"-",censusIndigenous2016$Remoteness)
 
+# Export 2012/2013 Kidney Disease rate in survey
+survey <- data.frame(State=survey_geo$State, Remoteness=survey_geo$Remoteness, Geography=survey_geo$Geography,
+                     Prediction=(survey_geo$Kidney.Disease/survey_geo$Total)*100)
+display <- txtRound(survey, 3)
+write_tableHTML(tableHTML(display), file = './Survey-Data/2011_GEO_SURVEY.html')
+
+rm(survey, display)
+
+unique(censusIndigenous2011[c("State","Geography")])
+#census2011 <- census[which(census$Year == "2011"),]
+#unique(census2011[c("State","VeryRemote")])
+
+
 ```
+
+# Health Survey Map
+
+```{r Map}
+
+  healthSurvey <- data.frame(Geography=survey_geo$Geography, 
+                             Prediction=(survey_geo$Kidney.Disease/survey_geo$Total)*100)
+  healthSurvey$Prediction[is.nan(healthSurvey$Prediction)] <- 0
+
+  remote_poly = readOGR(path.expand("./Processed-Data/RemotenessAreaShapeFile/RA_2011_AUST.shp"), 
+                        stringsAsFactors=FALSE)
+  remote_poly@data$STE_RA = paste0(remote_poly@data$STE_NAME11,"-",remote_poly@data$RA_NAME11)
+  
+  # Join the CSV data to the shapefile:
+  results_poly = merge(x=remote_poly, y=healthSurvey, by.x="STE_RA",by.y="Geography")
+  
+  ## define a palette for the colour
+  pal <- colorNumeric(palette = "YlOrRd",
+                      domain = healthSurvey$Prediction)
+  #polygons
+  leaflet(data=results_poly) %>%
+    addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5,
+                opacity = 1.0, fillOpacity = 0.5,
+                fillColor = ~pal(Prediction),
+                highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                    bringToFront = TRUE)) %>%
+    addLegend(position = "bottomleft", pal = pal, values = ~Prediction, title="Kidney Disease (percentage)") 
+
+```
+
 
 # Generalised Linear Model - Age
 
@@ -134,11 +180,22 @@ rm(fitDiag, x)
   data$Age[data$Age == "80-89 years" | data$Age == "90-99 years"] <- "75 or over" 
   
   prediction2011 <- predict(glmFit, data.frame(Age=data$Age))
+  prediction2011 <- data.frame(Geography=data$Geography, Prediction=prediction2011*100)
   
-  prediction2011 <- data.frame(Geography=data$Geography, Prediction=prediction2011)
+  data$KidneyDisease <- (prediction2011$Prediction/100) * data$Count
+  sum(data$KidneyDisease) # Number of Indigenous people with kidney disease
+  sum(data$Count) # Number of Indigenous people in data
+  (sum(data$KidneyDisease) / sum(data$Count)) * 100 # Percentage with kidney disease
+    
   prediction2011 <- aggregate(Prediction ~ Geography , mean, data=prediction2011)
   
   display <- txtRound(prediction2011, 3)
+  write_tableHTML(tableHTML(display), file = './2011-Census-Analysis/tables/2011_GLM_Age.html')
+  
+# Calculate RMSE
+  prediction <- predict(glmFit, data.frame(Age=survey_age$Age))
+  actual <- survey_age$Kidney.Disease/survey_age$Total
+  rmse(actual, prediction)
   
 # 2011 Map
 
@@ -159,7 +216,7 @@ rm(fitDiag, x)
                 fillColor = ~pal(Prediction),
                 highlightOptions = highlightOptions(color = "white", weight = 2,
                                                     bringToFront = TRUE)) %>%
-    addLegend(position = "bottomleft", pal = pal, values = ~Prediction, title="Kidney Disease (proportion)") 
+    addLegend(position = "bottomleft", pal = pal, values = ~Prediction, title="Kidney Disease (percentage)") 
 
 # Apply to 2016 Census
   data <- censusIndigenous2016
@@ -168,8 +225,11 @@ rm(fitDiag, x)
   
   prediction2016 <- predict(glmFit, data.frame(Age=data$Age))
   
-  prediction2016 <- data.frame(Geography=data$Geography, Prediction=prediction2016)
+  prediction2016 <- data.frame(Geography=data$Geography, Prediction=prediction2016*100)
   prediction2016 <- aggregate(Prediction ~ Geography , mean, data=prediction2016)
+  
+  display <- txtRound(prediction2016, 3)
+  write_tableHTML(tableHTML(display), file = './2016-Census-Analysis/tables/2016_GLM_Age.html')
   
 # 2016 Map
 
@@ -190,7 +250,7 @@ rm(fitDiag, x)
                 fillColor = ~pal(Prediction),
                 highlightOptions = highlightOptions(color = "white", weight = 2,
                                                     bringToFront = TRUE)) %>%
-    addLegend(position = "bottomleft", pal = pal, values = ~Prediction, title="Kidney Disease (proportion)") 
+    addLegend(position = "bottomleft", pal = pal, values = ~Prediction, title="Kidney Disease (percentage)") 
   
 ```
 
@@ -221,13 +281,28 @@ rm(fitDiag, x)
 
 # Apply to 2011 Indigenous Census data - predicts kidney disease rate (Kidney Disease / Total)
   data <- censusIndigenous2011
-  data$Remoteness[data$Remoteness == "Very Remote Australia"] <- 
-    "Very Remote Australia, Migratory (does not feature in these data), No usual address"
+  #data$Remoteness[data$Remoteness == "Very Remote Australia"] <- 
+  #  "Very Remote Australia, Migratory (does not feature in these data), No usual address"
 
   prediction2011 <- predict(glmFit, data.frame(State=data$State, Remoteness=data$Remoteness))
+  prediction2011 <- data.frame(Geography=data$Geography, Prediction=prediction2011*100)
   
-  prediction2011 <- data.frame(Geography=data$Geography, Prediction=prediction2011)
+  data$KidneyDisease <- (prediction2011$Prediction/100) * data$Count
+  sum(data$KidneyDisease, na.rm = TRUE) # Number of Indigenous people with kidney disease
+  sum(data$Count) # Number of Indigenous people in data
+  (sum(data$KidneyDisease, na.rm = TRUE) / sum(data$Count)) * 100 # Percentage with kidney disease
+  
   prediction2011 <- aggregate(Prediction ~ Geography , mean, data=prediction2011)
+  
+  display <- txtRound(prediction2011, 3)
+  write_tableHTML(tableHTML(display), file = './2011-Census-Analysis/tables/2011_GLM_Remoteness.html')
+  
+    
+# Calculate RMSE
+  prediction <- predict(glmFit, data.frame(State=survey_geo$State, Remoteness=survey_geo$Remoteness))
+  actual <- survey_geo$Kidney.Disease/survey_geo$Total
+  actual[is.nan(actual)] <- 0
+  rmse(actual, prediction)
 
 # 2011 Map
 
@@ -248,17 +323,20 @@ rm(fitDiag, x)
                 fillColor = ~pal(Prediction),
                 highlightOptions = highlightOptions(color = "white", weight = 2,
                                                     bringToFront = TRUE)) %>%
-    addLegend(position = "bottomleft", pal = pal, values = ~Prediction, title="Kidney Disease (proportion)") 
+    addLegend(position = "bottomleft", pal = pal, values = ~Prediction, title="Kidney Disease (percentage)") 
 
 # Apply to 2016 Census
   data <- censusIndigenous2016
-  data$Remoteness[data$Remoteness == "Very Remote Australia"] <- 
-    "Very Remote Australia, Migratory (does not feature in these data), No usual address"
+  #data$Remoteness[data$Remoteness == "Very Remote Australia"] <- 
+  #  "Very Remote Australia, Migratory (does not feature in these data), No usual address"
 
   prediction2016 <- predict(glmFit, data.frame(State=data$State, Remoteness=data$Remoteness))
   
-  prediction2016 <- data.frame(Geography=data$Geography, Prediction=prediction2016)
+  prediction2016 <- data.frame(Geography=data$Geography, Prediction=prediction2016*100)
   prediction2016 <- aggregate(Prediction ~ Geography , mean, data=prediction2016)
+  
+  display <- txtRound(prediction2016, 3)
+  write_tableHTML(tableHTML(display), file = './2016-Census-Analysis/tables/2016_GLM_Remoteness.html')
   
 # 2016 Map
 
@@ -279,7 +357,7 @@ rm(fitDiag, x)
                 fillColor = ~pal(Prediction),
                 highlightOptions = highlightOptions(color = "white", weight = 2,
                                                     bringToFront = TRUE)) %>%
-    addLegend(position = "bottomleft", pal = pal, values = ~Prediction, title="Kidney Disease (proportion)")
+    addLegend(position = "bottomleft", pal = pal, values = ~Prediction, title="Kidney Disease (percentage)")
 
 ```
 
@@ -295,8 +373,8 @@ anova(glmFit)
 summary(glmFit)
 Anova(glmFit, type="II", test="LR")
 
-#fitDiag <- glm.diag(glmFit)
-#glm.diag.plots(glmFit, fitDiag)
+fitDiag <- glm.diag(glmFit)
+glm.diag.plots(glmFit, fitDiag)
 
 x = residuals(glmFit)
 plotNormalHistogram(x)
@@ -315,10 +393,23 @@ rm(fitDiag, step, x)
                 data$Income == "Not applicable" | data$Income == "Nil income"] <- "Not known"
   
   prediction2011 <- predict(glmFit, data.frame(incm=data$Income))
+  prediction2011 <- data.frame(Geography=data$Geography, Prediction=prediction2011*100)
   
-  prediction2011 <- data.frame(Geography=data$Geography, Prediction=prediction2011)
+  data$KidneyDisease <- (prediction2011$Prediction/100) * data$Count
+  sum(data$KidneyDisease, na.rm = TRUE) # Number of Indigenous people with kidney disease
+  sum(data$Count) # Number of Indigenous people in data
+  (sum(data$KidneyDisease, na.rm = TRUE) / sum(data$Count)) * 100 # Percentage with kidney disease
+  
   prediction2011 <- aggregate(Prediction ~ Geography , mean, data=prediction2011)
+  
+  display <- txtRound(prediction2011, 3)
+  write_tableHTML(tableHTML(display), file = './2011-Census-Analysis/tables/2011_GLM_Income.html')
 
+# Calculate RMSE
+  prediction <- predict(glmFit, data.frame(incm=survey_incm$incm))
+  actual <- survey_incm$Kidney.Disease/survey_incm$Total
+  rmse(actual, prediction)
+  
 # 2011 Map
 
   remote_poly = readOGR(path.expand("./Processed-Data/RemotenessAreaShapeFile/RA_2011_AUST.shp"), 
@@ -338,7 +429,7 @@ rm(fitDiag, step, x)
                 fillColor = ~pal(Prediction),
                 highlightOptions = highlightOptions(color = "white", weight = 2,
                                                     bringToFront = TRUE)) %>%
-    addLegend(position = "bottomleft", pal = pal, values = ~Prediction, title="Kidney Disease (proportion)") 
+    addLegend(position = "bottomleft", pal = pal, values = ~Prediction, title="Kidney Disease (percentage)") 
 
 # Apply to 2016 Census
   data <- censusIndigenous2016
@@ -348,8 +439,11 @@ rm(fitDiag, step, x)
   
   prediction2016 <- predict(glmFit, data.frame(incm=data$Income))
   
-  prediction2016 <- data.frame(Geography=data$Geography, Prediction=prediction2016)
+  prediction2016 <- data.frame(Geography=data$Geography, Prediction=prediction2016*100)
   prediction2016 <- aggregate(Prediction ~ Geography , mean, data=prediction2016)
+  
+  display <- txtRound(prediction2016, 3)
+  write_tableHTML(tableHTML(display), file = './2016-Census-Analysis/tables/2016_GLM_Income.html')
   
 # 2016 Map
 
@@ -370,7 +464,7 @@ rm(fitDiag, step, x)
                 fillColor = ~pal(Prediction),
                 highlightOptions = highlightOptions(color = "white", weight = 2,
                                                     bringToFront = TRUE)) %>%
-    addLegend(position = "bottomleft", pal = pal, values = ~Prediction, title="Kidney Disease (proportion)") 
+    addLegend(position = "bottomleft", pal = pal, values = ~Prediction, title="Kidney Disease (percentage)") 
 
 ```
 
